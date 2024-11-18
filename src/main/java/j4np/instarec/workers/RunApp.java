@@ -11,6 +11,8 @@ import j4np.data.base.DataWorker;
 import j4np.hipo5.data.Event;
 import j4np.hipo5.io.HipoReader;
 import j4np.hipo5.io.HipoWriter;
+import j4np.instarec.core.DriftChamberWorker;
+import j4np.instarec.core.TrackFinderWorker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
