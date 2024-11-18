@@ -9,7 +9,7 @@
     <dependencies>	 
       <dependency>
         <groupId>j4np</groupId>
-        <artifactId>j4np-ui</artifactId>
+        <artifactId>j4np-instarec</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
