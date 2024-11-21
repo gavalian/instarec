@@ -141,7 +141,8 @@ public class ClusterMatchingDataProvider {
               csvLineBuilder.append(String.format("%.6f,",part.getDouble(j,row)));
             }*/
 
-            //if conv to strips first
+            //best to conv to strips first
+            //add wires
             for (int j=12;j<18;j++){ 
               csvLineBuilder.append(String.format("%.6f,",part.getDouble(j,row)));
             }
@@ -216,7 +217,7 @@ public class ClusterMatchingDataProvider {
       }
     }
 
-    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar wTrain.h5 -o training_data/cfTrain
+    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar wTrainCF.h5 -o training_data/cfTrain
     
     public static void main(String[] args){
         

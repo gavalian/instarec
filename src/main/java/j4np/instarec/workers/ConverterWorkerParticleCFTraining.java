@@ -108,16 +108,18 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         
     }
 
-    public int fillRECParticleInfo(Leaf partout,Bank PartBank, int row, int pred_charge, double pred_pz) {
+    public int fillRECParticleInfo(Leaf partout,Bank PartBank, int row, int pred_charge, double pred_px, double pred_py, double pred_pz) {
         
       int best_pid=1;
       short best_pindex=999;
-      float best_resz=999, best_beta=999;
+      float best_resz=999,best_resx=999,best_resy=999, best_beta=999;
       for (short i = 0; i < PartBank.getRows(); i++) {
         int pid = PartBank.getInt("pid", i);
         int status = PartBank.getShort("status", i);
         int charge = PartBank.getByte("charge", i);
         float pz = PartBank.getFloat("pz", i);
+        float px = PartBank.getFloat("px", i);
+        float py = PartBank.getFloat("py", i);
         float vz = PartBank.getFloat("vz", i);
         float chi2pid = PartBank.getFloat("chi2pid", i);
         float beta = PartBank.getFloat("beta", i);
@@ -125,11 +127,16 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         if (Math.abs(status) >= 2000 && Math.abs(status) < 4000) {
           //want  good particles, only using this to create training sample
           if(vz<12 && vz>-13 && Math.abs(chi2pid)<5){
-            double resz=pred_pz-pz;
-            if( Math.abs(resz)<best_resz && resz<lim_pz && pred_charge==charge){ 
+            float resz=(float)pred_pz-pz;
+            float resx=(float)pred_px-px;
+            float resy=(float)pred_py-py;
+            if( Math.abs(resz)<best_resz && resz<lim_pz && Math.abs(resx)<best_resx && resx<lim_px && Math.abs(resy)<best_resy && resy<lim_py&& pred_charge==charge){ 
               best_pindex=i;
               best_pid=pid;
               best_beta=beta;
+              best_resx=resx;
+              best_resy=resy;
+              best_resz=resz;
             }
           }
         }
@@ -221,6 +228,8 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         ((Event) event).read(bhtcc);
         Leaf track = new Leaf(32000,1,"i",4096);
         ((Event) event).read(track);
+        //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
+        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC nphe
         Leaf partout = new Leaf(42,15,"sifssf3f3f6f9f3ff",4096);
 
         /*bpart.show();
@@ -238,7 +247,7 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
           //fill wires, take average between two slopes
           for (int j=12;j<18;j++){partout.putFloat(j,i, ((float)track.getDouble(j+5,i)+(float)track.getDouble(j+11,i))/2);}
 
-          int rec_pindex=fillRECParticleInfo(partout, bpart,i,track.getShort(3,i),track.getDouble(7,i));
+          int rec_pindex=fillRECParticleInfo(partout, bpart,i,track.getShort(3,i),track.getDouble(5,i),track.getDouble(6,i),track.getDouble(7,i));
           fillRECCalorimeterInfo(partout,bcal,i,rec_pindex,track.getShort(2,i));
           fillRECFTOFInfo(partout,bftof,i,rec_pindex,track.getShort(2,i));
           fillRECHTCCInfo(partout,bhtcc,i,rec_pindex);

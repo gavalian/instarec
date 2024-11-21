@@ -112,7 +112,7 @@ public class TrainingClusterFinder {
         dataPath_ws=dataPath+"_sector"+String.valueOf(sector);
       }
       NeuralModel model = NeuralModel.jsonFile(networkPath_ws+".json");
-      System.out.println(model.summary());
+      //System.out.println(model.summary());
         
       //DataList data = DataList.csv(dataPath_ws + ".csv",
       //  DataList.range(0, 6), DataList.range(6, 6 + nPredictedOutput)); //_outbending
@@ -166,11 +166,11 @@ public class TrainingClusterFinder {
             System.out.printf("%d \n\n",Math.round(predicted[10]));
           }
           
-          hDifU.fill((desired[out_start + 0] - predicted[out_start + 0])); // *500 ? 
+          hDifU.fill((desired[out_start + 0] - predicted[out_start + 0]));
           hDifV.fill((desired[out_start + 1] - predicted[out_start + 1]));
           hDifW.fill((desired[out_start + 2] - predicted[out_start + 2]));
-          hDif.fill((desired[9] - predicted[9])); // *1000 ?
-          hDifP.fill((desired[10] - predicted[10])); // *62 ?
+          hDif.fill((desired[9] - predicted[9]));
+          hDifP.fill((desired[10] - predicted[10]));
         }
         TDirectory.export("plots/clusterfinder"+String.valueOf(sector)+".twig","/ai/training/"+String.valueOf(calLayer[i])+"/"+charge,hDifU);
         TDirectory.export("plots/clusterfinder"+String.valueOf(sector)+".twig","/ai/training/"+String.valueOf(calLayer[i])+"/"+charge,hDifV);
@@ -226,11 +226,11 @@ public class TrainingClusterFinder {
         System.out.println("\n\n\nTraining for "+charge[i]);
         String dataPath=p.getOption("-in").stringValue()+"_"+charge[i];
         String networkPath=p.getOption("-name").stringValue()+"_"+charge[i];
-        //TrainingClusterFinder.trainNetwork(dataPath,networkPath);
+        TrainingClusterFinder.trainNetwork(dataPath,networkPath);
         TrainingClusterFinder.testNetwork(dataPath,networkPath,0,charge[i]);
         for(int j=1;j<7;j++){
           System.out.printf("\nTransfer training for sector %d\n",j);
-          //TrainingClusterFinder.transferTraining(dataPath,networkPath,j);
+          TrainingClusterFinder.transferTraining(dataPath,networkPath,j);
           TrainingClusterFinder.testNetwork(dataPath,networkPath,j,charge[i]);
         }
       }

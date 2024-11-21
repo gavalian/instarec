@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author gavalian
  */
-public class RunApp {
+public class RunAppValidation {
     public static DataFrame createFrames(int count){
         DataFrame<Event>  frame = new DataFrame<>();        
         for(int i = 0; i < count; i++) frame.addEvent(new Event());
@@ -32,7 +32,7 @@ public class RunApp {
         List<DataActor> actors = new ArrayList<>();
         for(int a = 0; a < nactors; a++){
             DataActor actor = new DataActor();
-            DataFrame frame = RunApp.createFrames(nframes);
+            DataFrame frame = RunAppValidation.createFrames(nframes);
             actor.setWorkes(workers);
             actor.setDataFrame(frame);
             actors.add(actor);
@@ -64,12 +64,13 @@ public class RunApp {
         ClusterFinderWorkerFTOF  ftoffinder = new ClusterFinderWorkerFTOF(pathToClusterFinder);
         ConverterWorkerHTCC  htcc = new ConverterWorkerHTCC();
         ElPIDWorker elPID  = new ElPIDWorker(pathToElPID,threshold);
+        ConverterWorkerParticleCFTraining   convertParticleCFTraining = new ConverterWorkerParticleCFTraining();
         
         finder.initNetworks();
         
-        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,ecalfinder,ftoffinder,htcc,elPID);
+        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,ecalfinder,ftoffinder,htcc,elPID,convertParticleCFTraining);
         
-        List<DataActor>   actors = RunApp.createActors(6, 128, workers);
+        List<DataActor>   actors = RunAppValidation.createActors(1, 128, workers);
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
         

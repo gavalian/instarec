@@ -46,6 +46,7 @@ public class ConverterWorkerHTCC extends DataWorker {
     public void execute(DataEvent event) {
         Bank b = new Bank(htccSchema,4096);
         ((Event) event).read(b);
+        //sector, all 8 htcc mirrors adc in sector
         Leaf adc = new Leaf(42,13,"i8f",4096);
         
         //intialise bank, will be easier to always have all 6 sectors
@@ -59,7 +60,7 @@ public class ConverterWorkerHTCC extends DataWorker {
 
         for(int r = 0; r < b.getRows(); r++){
           if(b.getInt(4, r)>0.){
-            int index = ((b.getByte(1, r) - 1) * 4 + b.getShort(2, r)); //-1 to start from 0-7
+            int index = ((b.getByte(1, r) - 1) * 4 + b.getShort(2, r)); //-1 for 0-7, not for 1-8
             adc.putFloat(index, b.getByte(0, r)-1, b.getInt(4, r));
           }
         }
