@@ -30,7 +30,10 @@
           <!-- Maven JAR Plugin for specifying Main-Class -->
             <archive>
               <manifest>
-                <mainClass>j4np.instarec.workers.RunAppTraining</mainClass> <!-- Specify the main class -->
+                <!-- Specify the main class -->
+                <!-- <mainClass>j4np.instarec.workers.RunAppTraining</mainClass> --> 
+                <!-- <mainClass>j4np.instarec.data.ClusterMatchingDataProvider</mainClass> -->
+                <mainClass>j4np.instarec.networks.TrainingClusterFinder</mainClass>
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>

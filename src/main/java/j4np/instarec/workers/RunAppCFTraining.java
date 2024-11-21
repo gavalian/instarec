@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author gavalian
  */
-public class RunAppTraining {
+public class RunAppCFTraining {
     public static DataFrame createFrames(int count){
         DataFrame<Event>  frame = new DataFrame<>();        
         for(int i = 0; i < count; i++) frame.addEvent(new Event());
@@ -32,19 +32,21 @@ public class RunAppTraining {
         List<DataActor> actors = new ArrayList<>();
         for(int a = 0; a < nactors; a++){
             DataActor actor = new DataActor();
-            DataFrame frame = RunAppTraining.createFrames(nframes);
+            DataFrame frame = RunAppCFTraining.createFrames(nframes);
             actor.setWorkes(workers);
             actor.setDataFrame(frame);
             actors.add(actor);
         }
         return actors;
     }
+
+    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar
     
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-        //String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3.h5";
-        String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_1.h5";
+        //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -56,17 +58,14 @@ public class RunAppTraining {
         ConverterWorker   convert = new ConverterWorker();
         DriftChamberWorker  dcwrk = new DriftChamberWorker();
         TrackFinderWorker  finder = new TrackFinderWorker();
-        ConverterWorkerECAL   convertECAL = new ConverterWorkerECAL();
-        ConverterWorkerHTCC   convertHTCC = new ConverterWorkerHTCC();
-        ConverterWorkerFTOF   convertFTOF = new ConverterWorkerFTOF();
 
         ConverterWorkerParticleCFTraining   convertParticleCFTraining = new ConverterWorkerParticleCFTraining();
         
         finder.initNetworks();
         
-        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,convertHTCC,convertECAL,convertFTOF,convertParticleCFTraining);
+        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,convertParticleCFTraining);
         
-        List<DataActor>   actors = RunAppTraining.createActors(1, 128, workers);
+        List<DataActor>   actors = RunAppCFTraining.createActors(1, 128, workers);
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
         

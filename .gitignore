@@ -1,2 +1,5 @@
 target
-w.h5
+plots
+training_data
+logs
+*.h5
