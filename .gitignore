@@ -1,5 +1,5 @@
 target
-plots
+plots/*
 training_data
 logs
 *.h5
