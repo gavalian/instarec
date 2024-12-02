@@ -3,3 +3,4 @@ plots/*
 training_data
 logs
 *.h5
+.vscode
