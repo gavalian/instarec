@@ -253,12 +253,12 @@ public class ClusterMatchingValidater {
       }
     }
 
-    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in wTrainElPID.h5 
+    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in w.h5 
     //read plots in j4shell with eg TwigStudio.browser("plots/clusterfinder0.twig");
     
     public static void main(String[] args){
         
-      System.out.println("----- starting cluster finder data provider ");
+      System.out.println("----- starting cluster finder data validater ");
       OptionParser p = new OptionParser();
       p.addRequired("-in", "input name");
       p.parse(args);

@@ -100,7 +100,7 @@ public class TrainingClusterFinder {
       DeepNettsTrainer   trainer = new DeepNettsTrainer(network);
       trainer.updateLayers();        
       DataSet dset = trainer.convert(data, trans);        
-      trainer.train(dset, 100);
+      trainer.train(dset, 1000);
       trainer.save(networkPath+".json", trans);
     }
     
@@ -203,7 +203,7 @@ public class TrainingClusterFinder {
       //data.show();
         
       DataSet dset = trainer.convert(data, transformer);        
-      trainer.train(dset, 20);
+      trainer.train(dset, 250);
       trainer.save(networkPath_ws+".json", transformer);
     }
     

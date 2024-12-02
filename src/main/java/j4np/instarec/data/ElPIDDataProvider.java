@@ -5,6 +5,7 @@
 package j4np.instarec.data;
 
 import j4np.hipo5.data.Leaf;
+import j4np.hipo5.data.Bank;
 import j4np.hipo5.data.Event;
 import j4np.hipo5.io.HipoReader;
 import j4np.instarec.utils.DataEntry;
@@ -30,6 +31,32 @@ public class ElPIDDataProvider {
         
     }
 
+    public Boolean radiatedPhoton(Bank RECPart, int pindex){
+
+      double pz = RECPart.getFloat("pz", pindex);
+      double px = RECPart.getFloat("px", pindex);
+      double py = RECPart.getFloat("py", pindex);
+      double p=Math.sqrt(px*px+py*py+pz*pz);
+      double Theta = Math.acos(pz / p)*(180/Math.PI);// Math.atan2(Math.sqrt(px*px+py*py),pz);
+      double Phi = Math.atan2(py, px)*(180/Math.PI);
+      for (short i = 0; i < RECPart.getRows(); i++) {
+        int charge = RECPart.getByte("charge", i);
+        double pzphoton = RECPart.getFloat("pz", i);
+        double pxphoton = RECPart.getFloat("px", i);
+        double pyphoton = RECPart.getFloat("py", i);
+        double pphoton=Math.sqrt(pxphoton*pxphoton+pyphoton*pyphoton+pzphoton*pzphoton);
+        double Thetaphoton = Math.acos(pzphoton / p)*(180/Math.PI);// Math.atan2(Math.sqrt(pxphoton*pxphoton+pyphoton*pyphoton),pzphoton);
+        double Phiphoton = Math.atan2(pyphoton, pxphoton)*(180/Math.PI);
+        //just use charge and not pid because some photons missided as neutrons
+        if(Math.abs(Theta-Thetaphoton)<0.5 && charge==0){
+          return true;
+        }
+      }
+
+      return false;
+
+    }
+
     
     public void process(String file, String output, int limTotNegEvs){
 
@@ -51,6 +78,8 @@ public class ElPIDDataProvider {
       Leaf pred_ECAL = new Leaf(42, 12, "i", 1200);
       Leaf pred_HTCC = new Leaf(42, 13, "i", 1200);
 
+      Bank recpart = r.getBank("REC::Particle");
+
       int badEl=0;
       
       while(r.hasNext() && count[0]<limTotNegEvs){
@@ -58,13 +87,16 @@ public class ElPIDDataProvider {
         ev.read(part,42,15);
         ev.read(pred_ECAL,42,12);
         ev.read(pred_HTCC,42,13);
+        ev.read(recpart);
         for(int row=0;row<part.getRows();row++){
 
           short charge = part.getShort(4,row);
           short sector = part.getShort(3,row);
           int pid=part.getInt(1,row);
+          int pindex=part.getShort(0,row);
           //only take negative particles 
-          if(charge==-1 && sector>0){
+          //and tracks matched to rec particles
+          if(charge==-1 && sector>0 && pindex!=999){
 
             StringBuilder csvLineBuilder = new StringBuilder(); 
 
@@ -118,17 +150,28 @@ public class ElPIDDataProvider {
               if(sumHTCC==0){badEl++;}
               //require at least some energy in cal and hit in HTCC to avoid bad tracks
               if(sumE!=0 && sumHTCC!=0){
-                write=1;
-                writesect=1;
+                if(count[0]<count[7]){
+                  write=1;
+                }
+                if(count[sector]<count[7+sector] ){
+                  writesect=1;
+                }
+                //write=1;
+                //writesect=1;
               }
             } else {
               countOffset=7;
               csvLineBuilder.append("1,0");
               //require at least some energy in cal to avoid bad tracks
-              if(count[7]<count[0] && sumE!=0){
+              //radiated photons are a clear indication that the particle is an e-
+              if(sumE!=0 && !radiatedPhoton(recpart, pindex)){
+                /*if(count[7]<count[0]){
+                  write=1;
+                }
+                if(count[7+sector]<count[sector] ){
+                  writesect=1;
+                }*/
                 write=1;
-              }
-              if(count[7+sector]<count[sector] && sumE!=0){
                 writesect=1;
               }
             }
