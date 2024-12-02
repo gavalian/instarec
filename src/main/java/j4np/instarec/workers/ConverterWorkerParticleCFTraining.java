@@ -23,7 +23,6 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
     Schema reccalorimeterSchema = null;
     Schema recftofSchema = null;
     Schema rechtccSchema = null;
-    double lim_px=0.2,lim_py=0.2,lim_pz=0.2;
 
     public ConverterWorkerParticleCFTraining(){
         //DC::tdc/20600/12,"sector/B,layer/B,component/S,order/B,TDC/I";
@@ -109,10 +108,13 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
     }
 
     public int fillRECParticleInfo(Leaf partout,Bank PartBank, int row, int pred_charge, double pred_px, double pred_py, double pred_pz) {
+
+      double lim_px=0.2,lim_py=0.2,lim_pz=0.2;
         
-      int best_pid=1;
+      int best_pid=999;
       short best_pindex=999;
-      float best_resz=999,best_resx=999,best_resy=999, best_beta=999;
+      double best_resz=999,best_resx=999,best_resy=999;
+      float best_beta=999;
       for (short i = 0; i < PartBank.getRows(); i++) {
         int pid = PartBank.getInt("pid", i);
         int status = PartBank.getShort("status", i);
@@ -127,10 +129,10 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         if (Math.abs(status) >= 2000 && Math.abs(status) < 4000) {
           //want  good particles, only using this to create training sample
           if(vz<12 && vz>-13 && Math.abs(chi2pid)<5){
-            float resz=(float)pred_pz-pz;
-            float resx=(float)pred_px-px;
-            float resy=(float)pred_py-py;
-            if( Math.abs(resz)<best_resz && resz<lim_pz && Math.abs(resx)<best_resx && resx<lim_px && Math.abs(resy)<best_resy && resy<lim_py&& pred_charge==charge){ 
+            double resx=Math.abs(pred_px-px);
+            double resy=Math.abs(pred_py-py);
+            double resz=Math.abs(pred_pz-pz);
+            if(resz<best_resz && resz<lim_pz &&resx<best_resx && resx<lim_px &&resy<best_resy && resy<lim_py&& pred_charge==charge){ 
               best_pindex=i;
               best_pid=pid;
               best_beta=beta;

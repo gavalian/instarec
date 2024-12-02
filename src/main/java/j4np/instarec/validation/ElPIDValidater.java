@@ -26,6 +26,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+//for priting
+import j4np.hipo5.data.Bank;
+
 /**
  *
  * @author tyson
@@ -35,19 +38,19 @@ public class ElPIDValidater {
     public ElPIDValidater(){
     }
 
-    public int[] checkmets(float resp, double threshold, int pid){
+    public int[] checkmets(float resp, double threshold, int pid,double htcc){
       int[] mets=new int[3];
       mets[0]=0;
       mets[1]=0;
       mets[2]=0;
       if(resp>threshold){
-        if(pid==11){
+        if(pid==11 && htcc!=0){
           mets[0]=1;
         } else{
           mets[1]=1;
         }
       } else{
-        if(pid==11){
+        if(pid==11 && htcc!=0){
           mets[2]=1;
         }
       }
@@ -113,11 +116,12 @@ public class ElPIDValidater {
 
     }
     
-    public void process(String file, int limTotNegEvs,double threshold, float[] respbins, float[] pbins, float[] thetabins, float[] phibins, float effLow){
+    public void process(String file, int limTotNegEvs,double threshold, float[] respbins, float[] pbins, float[] thetabins, float[] phibins, float effLow, Boolean print){
 
       float TP=0,FP=0,FN=0;
 
-      int nrespBins=Math.round((respbins[2] - respbins[1])/respbins[0]);
+      int nrespBins=0;
+      for(float bin=respbins[1];bin<(respbins[2]-respbins[0]);bin+=respbins[0]){nrespBins++;}
       float[] bincentre_resp=new float[nrespBins];
       float[] TP_resp=new float[nrespBins];
       float[] FP_resp=new float[nrespBins];
@@ -129,7 +133,8 @@ public class ElPIDValidater {
         FN_resp[i]=0;
       }
 
-      int npBins=Math.round((pbins[2] - pbins[1])/pbins[0]);
+      int npBins=0;
+      for(float bin=pbins[1];bin<(pbins[2]-pbins[0]);bin+=pbins[0]){npBins++;}
       float[] bincentre_p=new float[npBins];
       float[] TP_p=new float[npBins];
       float[] FP_p=new float[npBins];
@@ -141,7 +146,8 @@ public class ElPIDValidater {
         FN_p[i]=0;
       }
 
-      int nthetaBins=Math.round((thetabins[2] - thetabins[1])/thetabins[0]);
+      int nthetaBins=0;
+      for(float bin=thetabins[1];bin<(thetabins[2]-thetabins[0]);bin+=thetabins[0]){nthetaBins++;}
       float[] bincentre_theta=new float[nthetaBins];
       float[] TP_theta=new float[nthetaBins];
       float[] FP_theta=new float[nthetaBins];
@@ -153,7 +159,8 @@ public class ElPIDValidater {
         FN_theta[i]=0;
       }
 
-      int nphiBins=Math.round((phibins[2] - phibins[1])/phibins[0]);
+      int nphiBins=0;
+      for(float bin=phibins[1];bin<(phibins[2]-phibins[0]);bin+=phibins[0]){nphiBins++;}
       float[] bincentre_phi=new float[nphiBins];
       float[] TP_phi=new float[nphiBins];
       float[] FP_phi=new float[nphiBins];
@@ -174,6 +181,15 @@ public class ElPIDValidater {
       Leaf part = new Leaf(42, 15, "i", 1200);
       Leaf pred_part = new Leaf(32000, 2, "i", 1200);
 
+      /*for priting */
+      Leaf trackbank = new Leaf(32000,1,"i",4096);
+      Leaf ecalbank = new Leaf(42,12,"i",4096);
+      Leaf htccbank = new Leaf(42,13,"i",4096);
+      Leaf ftofbank = new Leaf(42,14,"i",4096);
+      Bank recpart = r.getBank("REC::Particle");
+      Bank reccal = r.getBank("REC::Calorimeter");
+      Bank rechtcc = r.getBank("REC::Cherenkov");
+
       H1F hRespPos = new H1F("e-", 100, 0, 1);
       hRespPos.attr().setLineColor(2);
       hRespPos.attr().setFillColor(2);
@@ -190,6 +206,18 @@ public class ElPIDValidater {
         ev.read(part,42,15);
         ev.read(pred_part,32000,2);
 
+        /* for print */
+        if(print){
+          ev.read(trackbank,32000,1);
+          ev.read(ecalbank,42,12);
+          ev.read(htccbank,42,13);
+          ev.read(ftofbank,42,14);
+          ev.read(recpart);
+          ev.read(reccal);
+          ev.read(rechtcc);
+        }
+
+       
         //same rows in part bank and pred_part bank
         for(int row=0;row<pred_part.getRows();row++){
           short charge = pred_part.getShort(4,row);
@@ -208,27 +236,51 @@ public class ElPIDValidater {
           //only estimating el pid metrics not tracking!
           if(sector>0 && charge==-1 && pindex!=999){
 
-            if(recpid==11){hRespPos.fill(resp);}
+            if(recpid==11 && pred_part.getDouble(30,row)!=0){
+              hRespPos.fill(resp);
+               /*priting stuff */
+               if(print){
+                if(resp<0.01){
+                  System.out.println("Have one true e- with resp <0.01:");
+                  System.out.println("rec part");
+                  recpart.show();
+                  System.out.println("part ");
+                  part.print();
+                  System.out.println("pred part ");
+                  pred_part.print();
+                  System.out.println("htcc ");
+                  htccbank.print();
+                  System.out.println("track ");
+                  trackbank.print();
+                  System.out.println("rec cal");
+                  reccal.show();
+                  System.out.println("rec htcc");
+                  rechtcc.show();
+                }
+              }
+            
+            }
             else{hRespNeg.fill(resp);}
 
-            int[] mets=checkmets(resp,threshold,recpid);
+            int[] mets=checkmets(resp,threshold,recpid,pred_part.getDouble(30,row));
             TP+=mets[0];
             FP+=mets[1];
             FN+=mets[2];
             int nbin=0;
             for(float bin=respbins[1];bin<(respbins[2]-respbins[0]);bin+=respbins[0]){
-              int[] binmets=checkmets(resp,bin,recpid);
+              int[] binmets=checkmets(resp,bin,recpid,pred_part.getDouble(30,row));
               bincentre_resp[nbin]=bin+(respbins[0]/2);
               TP_resp[nbin]+=binmets[0];
               FP_resp[nbin]+=binmets[1];
               FN_resp[nbin]+=binmets[2];
+             
               nbin++;
             }
 
             nbin=0;
             for(float bin=pbins[1];bin<(pbins[2]-pbins[0]);bin+=pbins[0]){
               if(p>=bin && p<(bin+pbins[0])){
-                int[] binmets=checkmets(resp,threshold,recpid);
+                int[] binmets=checkmets(resp,threshold,recpid,pred_part.getDouble(30,row));
                 bincentre_p[nbin]=bin+(pbins[0]/2);
                 TP_p[nbin]+=binmets[0];
                 FP_p[nbin]+=binmets[1];
@@ -240,7 +292,7 @@ public class ElPIDValidater {
             nbin=0;
             for(float bin=thetabins[1];bin<(thetabins[2]-thetabins[0]);bin+=thetabins[0]){
               if(Theta>=bin && Theta<(bin+thetabins[0])){
-                int[] binmets=checkmets(resp,threshold,recpid);
+                int[] binmets=checkmets(resp,threshold,recpid,pred_part.getDouble(30,row));
                 bincentre_theta[nbin]=bin+(thetabins[0]/2);
                 TP_theta[nbin]+=binmets[0];
                 FP_theta[nbin]+=binmets[1];
@@ -252,7 +304,7 @@ public class ElPIDValidater {
             nbin=0;
             for(float bin=phibins[1];bin<(phibins[2]-phibins[0]);bin+=phibins[0]){
               if(Phi>=bin && Phi<(bin+phibins[0])){
-                int[] binmets=checkmets(resp,threshold,recpid);
+                int[] binmets=checkmets(resp,threshold,recpid,pred_part.getDouble(30,row));
                 bincentre_phi[nbin]=bin+(phibins[0]/2);
                 TP_phi[nbin]+=binmets[0];
                 FP_phi[nbin]+=binmets[1];
@@ -318,7 +370,7 @@ public class ElPIDValidater {
       phibins[2]=(float)180;
         
       ElPIDValidater dp = new ElPIDValidater();
-      dp.process(p.getOption("-in").stringValue(),150000,0.1,respbins,pbins,thetabins,phibins,(float)0.99);
+      dp.process(p.getOption("-in").stringValue(),150000,0.1,respbins,pbins,thetabins,phibins,(float)0.99,true);
   
       
       
