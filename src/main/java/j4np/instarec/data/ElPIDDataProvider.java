@@ -144,6 +144,21 @@ public class ElPIDDataProvider {
               sumHTCC+=pred_HTCC.getDouble(j+1,sector-1);
             }
 
+            int sectorBefore=sector-1;
+            int sectorAfter=sector+1;
+            if(sector==1){sectorBefore=6;}
+            else if(sector==6){sectorAfter=1;}
+
+            for(int j=0;j<8;j++){
+              csvLineBuilder.append(String.format("%.6f,",pred_HTCC.getDouble(j+1,sectorBefore-1)));
+              sumHTCC+=pred_HTCC.getDouble(j+1,sectorBefore-1);
+            }
+
+            for(int j=0;j<8;j++){
+              csvLineBuilder.append(String.format("%.6f,",pred_HTCC.getDouble(j+1,sectorAfter-1)));
+              sumHTCC+=pred_HTCC.getDouble(j+1,sectorAfter-1);
+            }
+
             int countOffset=0,write=0,writesect=0;
             if(pid==11){
               csvLineBuilder.append("0,1");
@@ -213,7 +228,7 @@ public class ElPIDDataProvider {
       for(int i=1;i<7;i++){
         System.out.printf("Sector %d : e- %d other %d \n",i,count[i],count[i+7]);
       }
-      //System.out.printf("bad els %d \n",badEl);
+      System.out.printf("e- with no HTCC hits %d \n",badEl);
 
     }
 

@@ -190,6 +190,8 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
           partout.putFloat(30,row,nphe);
         }
       }
+      partout.putFloat(31,row,0);
+      partout.putFloat(32,row,0);
     }
 
     public void fillRECFTOFInfo(Leaf partout,Bank Scint_Bank,int row, int pindex,short pred_sector){
@@ -231,8 +233,8 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         Leaf track = new Leaf(32000,1,"i",4096);
         ((Event) event).read(track);
         //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
-        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC nphe
-        Leaf partout = new Leaf(42,15,"sifssf3f3f6f9f3ff",4096);
+        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC nphe (same sector, before, after)
+        Leaf partout = new Leaf(42,15,"sifssf3f3f6f9f3ffff",4096);
 
         /*bpart.show();
         bcal.show();

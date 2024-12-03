@@ -82,21 +82,21 @@ public class TrainingElPID {
 
   public static void trainNetwork(String dataPath, String networkPath) {
 
-    FeedForwardNetwork network = DeepNettsTrainer.createClassifier(new int[] { 35, 35, 20, 10, 5, nPredictedOutput });
+    FeedForwardNetwork network = DeepNettsTrainer.createClassifier(new int[] { 51, 35, 20, 10, 5, nPredictedOutput });
     EntryTransformer trans = new EntryTransformer();
 
     trans.input().add(3, 0, 150000); // calo ADCs
     trans.input().add(9, 1, 500); // ECAL locs
     trans.input().add(9, 0, 10); // ECALl DUs
     trans.input().add(6, 1, 112); // wires
-    trans.input().add(8, 0, 35000); // ECALl DUs
+    trans.input().add(24, 0, 35000); // HTCC ADCS
     trans.output().add(2, 0, 1); // Electron or not
 
     // DataList data = DataList.csv(dataPath + ".csv",
-    // DataList.range(0, 35), DataList.range(35, 35 + nPredictedOutput));
+    // DataList.range(0, 51), DataList.range(51, 51 + nPredictedOutput));
     // //_outbending
 
-    DataList data = readCSV(dataPath + ".csv", 35, nPredictedOutput);
+    DataList data = readCSV(dataPath + ".csv", 51, nPredictedOutput);
 
     data.shuffle();
     data.scan();
@@ -120,9 +120,9 @@ public class TrainingElPID {
     // System.out.println(model.summary());
 
     // DataList data = DataList.csv(dataPath_ws + ".csv",
-    // DataList.range(0, 35), DataList.range(35, 35 + nPredictedOutput));
+    // DataList.range(0, 51), DataList.range(51, 51 + nPredictedOutput));
     // //_outbending
-    DataList data = readCSV(dataPath_ws + ".csv", 35, nPredictedOutput);
+    DataList data = readCSV(dataPath_ws + ".csv", 51, nPredictedOutput);
     data.shuffle();
 
     float[] predicted = new float[nPredictedOutput];
@@ -258,9 +258,9 @@ public class TrainingElPID {
     trainer.updateLayers();
 
     // DataList data = DataList.csv(dataPath_ws + ".csv",
-    // DataList.range(0, 35), DataList.range(35, 35 + nPredictedOutput));
+    // DataList.range(0, 51), DataList.range(51, 51 + nPredictedOutput));
     // //_outbending
-    DataList data = readCSV(dataPath_ws + ".csv", 35, nPredictedOutput);
+    DataList data = readCSV(dataPath_ws + ".csv", 51, nPredictedOutput);
     data.shuffle();
     data.scan();
     // data.show();

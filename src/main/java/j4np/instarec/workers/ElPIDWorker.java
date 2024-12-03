@@ -50,11 +50,11 @@ public class ElPIDWorker extends DataWorker {
         Leaf ftofbank = new Leaf(42,14,"i",4096);
         ((Event) event).read(ftofbank);
         //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
-        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC sum ADC
-        Leaf partout = new Leaf(32000,2,"sifssf3f3f6f9f3ff",4096);
+        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC sum ADC (same sector, before, after)
+        Leaf partout = new Leaf(32000,2,"sifssf3f3f6f9f3ffff",4096);
 
         partout.setRows(trackbank.getRows()); 
-        float[] nInVars=new float[35];
+        float[] nInVars=new float[51];
         float[] predicted_pid=new float[2];
 
         //to fill array used for prediction
@@ -125,6 +125,27 @@ public class ElPIDWorker extends DataWorker {
           }
 
           partout.putFloat(htccoffsetout,i,sumHTCC);
+
+          int sectorBefore=sector-1;
+          int sectorAfter=sector+1;
+          if(sector==1){sectorBefore=6;}
+          else if(sector==6){sectorAfter=1;}
+
+          float sumHTCCBefore=0;
+          for(int j=0;j<8;j++){
+            nInVars[j+htccoffset+8]=(float)htccbank.getDouble(j+1,sectorBefore-1);
+            sumHTCCBefore+=htccbank.getDouble(j+1,sectorBefore-1);
+          }
+
+          float sumHTCCAfter=0;
+          for(int j=0;j<8;j++){
+            nInVars[j+htccoffset+16]=(float)htccbank.getDouble(j+1,sectorAfter-1);
+            sumHTCCAfter+=htccbank.getDouble(j+1,sectorAfter-1);
+          }
+
+          partout.putFloat(htccoffsetout,i,sumHTCC);
+          partout.putFloat(htccoffsetout+1,i,sumHTCCBefore);
+          partout.putFloat(htccoffsetout+2,i,sumHTCCAfter);
 
           if(charge==-1 && sector>0){
             ElPIDModels[sector-1].predict(nInVars, predicted_pid);
