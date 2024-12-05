@@ -45,6 +45,7 @@ public class RunApp {
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
         //String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3.h5";
         String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629.hipo";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -56,6 +57,8 @@ public class RunApp {
         String pathToClusterFinder = "etc/networks/clusterfinder/cf";
         String pathToElPID = "etc/networks/ElPID/ElPID";
         double threshold=0.1;        
+        stream.setSource(r).setSync(w);
+        
                 
         ConverterWorker   convert = new ConverterWorker();
         DriftChamberWorker  dcwrk = new DriftChamberWorker();
@@ -68,11 +71,12 @@ public class RunApp {
         finder.initNetworks();
         
         List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,ecalfinder,ftoffinder,htcc,elPID);
+        //List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder);
+        List<DataWorker>  workers = Arrays.asList(convert);
         
         List<DataActor>   actors = RunApp.createActors(6, 128, workers);
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
-        
         
         stream.run();
         

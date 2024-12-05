@@ -11,7 +11,6 @@ import j4np.instarec.utils.DeepNettsIO;
 import j4np.instarec.utils.DeepNettsTrainer;
 import j4np.instarec.utils.EntryTransformer;
 import j4np.instarec.utils.NeuralModel;
-import java.util.Arrays;
 import java.util.Random;
 import javax.visrec.ml.data.DataSet;
 
