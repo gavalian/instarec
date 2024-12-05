@@ -42,7 +42,7 @@ public class RunApp {
     
     public static void main(String[] args){
         
-        String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
+        String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629.hipo";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -64,7 +64,6 @@ public class RunApp {
         List<DataActor>   actors = RunApp.createActors(4, 128, workers);
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
-        
         
         stream.run();
         
