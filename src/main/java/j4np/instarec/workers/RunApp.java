@@ -49,7 +49,7 @@ public class RunApp {
         
         DataActorStream stream = new DataActorStream();
         
-        stream.setSource(r);//.setSync(w);
+        stream.setSource(r).setSync(w);
         
                 
         ConverterWorker   convert = new ConverterWorker();
@@ -58,7 +58,8 @@ public class RunApp {
         
         finder.initNetworks();
         
-        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder);
+        //List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder);
+        List<DataWorker>  workers = Arrays.asList(convert);
         
         List<DataActor>   actors = RunApp.createActors(4, 128, workers);
         
