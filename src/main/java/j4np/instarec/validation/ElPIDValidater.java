@@ -178,14 +178,14 @@ public class ElPIDValidater {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(42, 15, "i", 1200);
-      Leaf pred_part = new Leaf(32000, 2, "i", 1200);
+      Leaf part = new Leaf(32200, 99, "i", 1200);
+      Leaf pred_part = new Leaf(32200, 1, "i", 1200);
 
       /*for priting */
       Leaf trackbank = new Leaf(32000,1,"i",4096);
-      Leaf ecalbank = new Leaf(42,12,"i",4096);
-      Leaf htccbank = new Leaf(42,13,"i",4096);
-      Leaf ftofbank = new Leaf(42,14,"i",4096);
+      Leaf ecalbank = new Leaf(32200,2,"i",4096);
+      Leaf htccbank = new Leaf(32200,98,"i",4096);
+      Leaf ftofbank = new Leaf(32200,3,"i",4096);
       Bank recpart = r.getBank("REC::Particle");
       Bank reccal = r.getBank("REC::Calorimeter");
       Bank rechtcc = r.getBank("REC::Cherenkov");
@@ -203,15 +203,15 @@ public class ElPIDValidater {
       while(r.hasNext() && count<limTotNegEvs){
 
         r.nextEvent(ev);
-        ev.read(part,42,15);
-        ev.read(pred_part,32000,2);
+        ev.read(part,32200,99);
+        ev.read(pred_part,32200,1);
 
         /* for print */
         if(print){
           ev.read(trackbank,32000,1);
-          ev.read(ecalbank,42,12);
-          ev.read(htccbank,42,13);
-          ev.read(ftofbank,42,14);
+          ev.read(ecalbank,32200,2);
+          ev.read(htccbank,32200,98);
+          ev.read(ftofbank,32200,3);
           ev.read(recpart);
           ev.read(reccal);
           ev.read(rechtcc);
@@ -320,10 +320,14 @@ public class ElPIDValidater {
       TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Resp", hRespPos);
       TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Resp", hRespNeg);
 
+      System.out.printf("\nTP %f FP %f FN %f \n",TP,FP,FN);
+
       makeGraphs(nrespBins,effLow,bincentre_resp,TP_resp,FP_resp,FN_resp,"resp","Response","");
       makeGraphs(npBins,effLow,bincentre_p,TP_p,FP_p,FN_p,"P","Momentum","[GeV]");
       makeGraphs(nthetaBins,effLow,bincentre_theta,TP_theta,FP_theta,FN_theta,"theta","Theta","[Degrees]");
       makeGraphs(nphiBins,effLow,bincentre_phi,TP_phi,FP_phi,FN_phi,"phi","Phi","[Degrees]");
+
+
       
     }
 
@@ -371,7 +375,7 @@ public class ElPIDValidater {
       phibins[2]=(float)180;
         
       ElPIDValidater dp = new ElPIDValidater();
-      dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,true);
+      dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false);
   
       
       

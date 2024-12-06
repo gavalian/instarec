@@ -20,28 +20,15 @@ import j4np.instarec.utils.NeuralModel;
  * @author tyson
  */
 public class ClusterFinderWorkerFTOF extends DataWorker {
-    Schema ftofSchema = null;
     int nPredictedOutput=11;
     int clsize=1;
     NeuralModel[] cfModels_negatives = new NeuralModel[6];
     NeuralModel[] cfModels_positives = new NeuralModel[6];
     public ClusterFinderWorkerFTOF(String networkPath){
-        //DC::tdc/20600/12,"sector/B,layer/B,component/S,order/B,TDC/I";
-        SchemaBuilder b = new SchemaBuilder("FTOF::adc",20700,11);
-        ftofSchema = b.addEntry("sector", "B", "")
-                .addEntry("layer", "B", "")
-                .addEntry("component", "S", "")
-                .addEntry("order", "B", "")
-                .addEntry("ADC", "I", "")
-                .addEntry("time", "F", "")
-                .addEntry("ped", "S", "").build();
-
           for(int i=1;i<7;i++){
             cfModels_negatives[i-1]=NeuralModel.jsonFile(networkPath+"_negatives_sector"+String.valueOf(i)+".json");
             cfModels_positives[i-1]=NeuralModel.jsonFile(networkPath+"_positives_sector"+String.valueOf(i)+".json");
           }
-        
-        //ftofSchema.show();
     }
 
 
@@ -51,21 +38,22 @@ public class ClusterFinderWorkerFTOF extends DataWorker {
         return true;
     }
 
-    public void fillClusterBank(Leaf clusters,Bank FTOF_Bank,float[] pred_cf,short pred_sector, short row){
+    public void fillClusterBank(Leaf clusters,Leaf adc,float[] pred_cf,short pred_sector, short row){
 
       float[] timecs= new float[2];
       float[] energycs= new float[2];
 
-      for(int k = 0; k < FTOF_Bank.getRows(); k++){
-            
-        byte sect = FTOF_Bank.getByte("sector", k);
-        byte layer = FTOF_Bank.getByte("layer", k);
-        byte order = FTOF_Bank.getByte("order", k);
-        short strip = FTOF_Bank.getShort("component", k);
-        int ADC = FTOF_Bank.getInt("ADC", k);
-        float time = FTOF_Bank.getFloat("time", k);
+      for(int k = 0; k < adc.getRows(); k++){
 
-        if(time>0.0 && sect==pred_sector && layer==2 && order<2){ //orders of 10, 20 ? what does that mean??
+        int detector_type = adc.getInt(0, k); //no get byte function??
+        int sect = adc.getInt(1, k); //no get byte function??
+        int layer = adc.getInt(2, k);
+        int strip = adc.getInt(3, k);
+        int order = adc.getInt(4, k);
+        int ADC = adc.getInt(5, k);
+        float time =(float) adc.getDouble(6, k);
+
+        if(time>0.0 && sect==pred_sector && layer==2 && detector_type==12 && order<2 ){ //orders of 10, 20 ? what does that mean??
           //allow some tolerance for the prediction to be wrong
           if (strip > (Math.round(pred_cf[9]) - clsize) && strip < (Math.round(pred_cf[9]) + clsize)) {
             timecs[order]=time;
@@ -87,12 +75,12 @@ public class ClusterFinderWorkerFTOF extends DataWorker {
 
     @Override
     public void execute(DataEvent event) {
-        Bank b = new Bank(ftofSchema,1024);
-        ((Event) event).read(b);
+        Leaf adc = new Leaf(42,12,"i",4096);
+        ((Event) event).read(adc);
         Leaf trackbank = new Leaf(32000,1,"i",4096);
         ((Event) event).read(trackbank);
-        //track bank row, sector, layer,  component, path, av energy btw two layers, av time btw two layers
-        Leaf clusters = new Leaf(42,14,"ssiffff",4096);
+        //track bank row, sector, layer,  component, path, av energy btw left/right, av time btw left/right
+        Leaf clusters = new Leaf(32200,3,"ssiffff",4096);
 
         float[] track= new float[6];
         float[] predicted_clusterpos = new float[nPredictedOutput];
@@ -109,7 +97,7 @@ public class ClusterFinderWorkerFTOF extends DataWorker {
             cfModels_positives[trackbank.getShort(2,i)-1].predict(track, predicted_clusterpos);
           }
 
-          fillClusterBank(clusters,b,predicted_clusterpos,trackbank.getShort(2,i),i);
+          fillClusterBank(clusters,adc,predicted_clusterpos,trackbank.getShort(2,i),i);
           
 
         }

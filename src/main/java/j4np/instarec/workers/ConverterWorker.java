@@ -22,6 +22,7 @@ public class ConverterWorker extends DataWorker {
     Schema dcSchema = null;
     Schema ecSchema = null;
     Schema ftSchema = null;
+    Schema ftadcSchema = null;
     Schema htSchema = null;
     
     public ConverterWorker(){
@@ -57,6 +58,15 @@ public class ConverterWorker extends DataWorker {
                 .addEntry("ADC", "I", "")
                 .addEntry("time", "F", "pulse time")
                 .addEntry("ped", "S", "pedestal").build();
+
+        SchemaBuilder b5 = new SchemaBuilder("FTOF::adc",21200,11);
+        ftadcSchema = b5.addEntry("sector", "B", "")
+                .addEntry("layer", "B", "")
+                .addEntry("component", "S", "")
+                .addEntry("order", "B", "")
+                .addEntry("ADC", "I", "")
+                .addEntry("time", "F", "pulse time")
+                .addEntry("ped", "S", "pedestal").build();
        
         //dcSchema.show();
     }
@@ -79,11 +89,11 @@ public class ConverterWorker extends DataWorker {
         //System.out.printf(" rows = %d , leaf = %d\n",b.getRows(), tdc.getRows());
         for(int r = 0; r < b.getRows(); r++){
             tdc.putByte(0, r,(byte) 6); // this is DC type
-            tdc.putByte(1, r, b.getByte(0, r));
-            tdc.putByte(2, r, b.getByte(1, r));
-            tdc.putShort(3, r, b.getShort(2, r));
-            tdc.putByte(4,  r, b.getByte(3, r));
-            tdc.putInt(5,  r, b.getInt(4, r));
+            tdc.putByte(1, r, b.getByte(0, r)); //sector
+            tdc.putByte(2, r, b.getByte(1, r)); //layer
+            tdc.putShort(3, r, b.getShort(2, r)); //component
+            tdc.putByte(4,  r, b.getByte(3, r)); //order
+            tdc.putInt(5,  r, b.getInt(4, r)); //tdc
         }
         
         Bank bft = new Bank(ftSchema,1024);
@@ -92,7 +102,7 @@ public class ConverterWorker extends DataWorker {
         tdc.setRows(tdcRows + bft.getRows());
         for(int r = 0; r < bft.getRows(); r++){
             int rj = r + tdcRows;
-            tdc.putByte(  0,  rj,(byte) 12); // this is DC type
+            tdc.putByte(  0,  rj,(byte) 12); // this is FTOF type
             tdc.putByte(  1,  rj, bft.getByte(0, r));
             tdc.putByte(  2,  rj, bft.getByte(1, r));
             tdc.putShort( 3, rj, bft.getShort(2, r));
@@ -107,13 +117,13 @@ public class ConverterWorker extends DataWorker {
         adc.setRows(bec.getRows());
         for(int r = 0; r < bec.getRows(); r++){
             adc.putByte(  0,  r,(byte) 7); // this is ECAL type
-            adc.putByte(  1,  r, bec.getByte(  0, r));
-            adc.putByte(  2,  r, bec.getByte(  1, r));
-            adc.putShort( 3,  r, bec.getShort( 2, r));
-            adc.putByte(  4,  r, bec.getByte(  3, r));
-            adc.putInt(   5,  r, bec.getInt(   4, r));
-            adc.putFloat( 6,  r, bec.getFloat( 5, r));
-            adc.putShort( 7,  r, bec.getShort( 6, r));
+            adc.putByte(  1,  r, bec.getByte(  0, r)); //sector
+            adc.putByte(  2,  r, bec.getByte(  1, r)); //layer
+            adc.putShort( 3,  r, bec.getShort( 2, r)); //component
+            adc.putByte(  4,  r, bec.getByte(  3, r)); //order
+            adc.putInt(   5,  r, bec.getInt(   4, r)); //adc
+            adc.putFloat( 6,  r, bec.getFloat( 5, r)); //time 
+            adc.putShort( 7,  r, bec.getShort( 6, r)); //ped
         }
         
         Bank bht = new Bank(htSchema,1024);
@@ -131,6 +141,23 @@ public class ConverterWorker extends DataWorker {
             adc.putInt(   5,  rj, bht.getInt(   4, r));
             adc.putFloat( 6,  rj, bht.getFloat( 5, r));
             adc.putShort( 7,  rj, bht.getShort( 6, r));
+        }
+
+        Bank bftadc = new Bank(ftadcSchema,1024);
+        ((Event) event).read(bftadc);
+        int adcRows2 = adc.getRows();
+        adc.setRows(adcRows2 + bftadc.getRows());
+       
+        for(int r = 0; r < bftadc.getRows(); r++){
+            int rj = r + adcRows2;
+            adc.putByte(  0,  rj ,(byte) 12); // this is FTOF type
+            adc.putByte(  1,  rj, bftadc.getByte(  0, r));
+            adc.putByte(  2,  rj, bftadc.getByte(  1, r));
+            adc.putShort( 3,  rj, bftadc.getShort( 2, r));
+            adc.putByte(  4,  rj, bftadc.getByte(  3, r));
+            adc.putInt(   5,  rj, bftadc.getInt(   4, r));
+            adc.putFloat( 6,  rj, bftadc.getFloat( 5, r));
+            adc.putShort( 7,  rj, bftadc.getShort( 6, r));
         }
         
         

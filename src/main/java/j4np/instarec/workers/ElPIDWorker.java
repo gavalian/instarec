@@ -23,6 +23,16 @@ public class ElPIDWorker extends DataWorker {
     int nPredictedOutput=2;
     double threshold_on_response=0.1;
     NeuralModel[] ElPIDModels = new NeuralModel[6];
+
+    //to fill array used for prediction
+    //and output array, need to know
+    //where to start putting variables
+    //call this offsets
+    int stripsoffset=3,stripsoffsetout=18;
+    int Dsoffset=12, htccoffset=27, htccoffsetout=30;
+    int wiresoffset=21,wiresoffsetout=12,wiresoffsetin=17;
+    int ftofoffsetout=27;
+
     public ElPIDWorker(String networkPath,double th){
       threshold_on_response=th;
       for(int i=1;i<7;i++){
@@ -37,34 +47,136 @@ public class ElPIDWorker extends DataWorker {
         return true;
     }
 
+    public void readTrackBank(Leaf trackbank, Leaf partout, float[] nInVars, short row){
+      //add ps and vs from ai tracking in output
+      for (int j=6;j<12;j++){ partout.putFloat(j,row,(float)trackbank.getDouble(j-1,row));}
+      //fill wires, take average between two slopes
+      for (int j=0;j<6;j++){
+        nInVars[j+wiresoffset]=((float)trackbank.getDouble(j+wiresoffsetin,row)+(float)trackbank.getDouble(j+wiresoffsetin+6,row))/2;
+        partout.putFloat(j+wiresoffsetout,row, nInVars[j+wiresoffset]);
+      }
+    }
+
+    public double readECALClusters(Leaf ECALclusters, Leaf partout, float[] nInVars, short row){
+      double sumE=0;
+      //init sums of edep to 0
+      for(int j=0;j<3;j++){nInVars[j]=0;}
+      for(int j=0;j<ECALclusters.getRows();j++){
+        //match cluster to track
+        if(ECALclusters.getShort(0,j)==row){
+          if(ECALclusters.getInt(2,j)!=0){
+
+            nInVars[ECALclusters.getInt(2,j)-1+stripsoffset]=(float)ECALclusters.getDouble(3,j);
+            nInVars[ECALclusters.getInt(2,j)-1+Dsoffset]=ECALclusters.getInt(5,j);
+            partout.putFloat(ECALclusters.getInt(2,j)-1+stripsoffsetout,row,(float)ECALclusters.getDouble(3,j));
+            sumE+=ECALclusters.getDouble(4,j);
+
+            //sum energy in PCAL, ECIN, ECOUT
+            if(ECALclusters.getInt(2,j)<4){
+              nInVars[0]+=ECALclusters.getDouble(4,j);
+            } else if(ECALclusters.getInt(2,j)>=4 && ECALclusters.getInt(2,j)<7){
+              nInVars[1]+=ECALclusters.getDouble(4,j);
+            } else if(ECALclusters.getInt(2,j)>=7){
+              nInVars[2]+=ECALclusters.getDouble(4,j);
+            }
+          }
+        }
+      }
+      return sumE;
+    }
+
+    public float readHTCCadc(Leaf adc, Leaf partout, float[] nInVars, short row, short sector){
+
+      float sumHTCC=0, sumHTCCBefore=0,sumHTCCAfter=0;
+
+      int sectorBefore=sector-1;
+      int sectorAfter=sector+1;
+      if(sector==1){sectorBefore=6;}
+      else if(sector==6){sectorAfter=1;}
+
+      for(int k = 0; k < adc.getRows(); k++){
+        int detector_type = adc.getInt(0, k); //no get byte function??
+        int sect = adc.getInt(1, k); //no get byte function??
+        int layer = adc.getInt(2, k);
+        int strip = adc.getInt(3, k);
+        int ADC = adc.getInt(5, k);
+        if(ADC>0. && detector_type==15){
+          int index = ((layer - 1) * 4 + strip) - 1; //-1 for 0-7, not for 1-8
+
+          if(sect==sector){
+            nInVars[index+htccoffset]=ADC;
+            sumHTCC+=ADC;
+          } else if(sect==sectorBefore){
+            nInVars[index+htccoffset+8]=ADC;
+            sumHTCCBefore+=ADC;
+          } else if(sect==sectorAfter){
+            nInVars[index+htccoffset+16]=ADC;
+            sumHTCCAfter+=ADC;
+          }
+        }
+      }
+
+      partout.putFloat(htccoffsetout,row,sumHTCC);
+      partout.putFloat(htccoffsetout+1,row,sumHTCCBefore);
+      partout.putFloat(htccoffsetout+2,row,sumHTCCAfter);
+
+      return (sumHTCC+sumHTCCAfter+sumHTCCBefore);
+    }
+
+    public float readFTOFClusters(Leaf FTOFclusters, Leaf partout, float[] nInVars, short row){
+      float FTOFpredPath=0;
+      //fill FTOF info
+      for(int j=0;j<FTOFclusters.getRows();j++){
+        if(FTOFclusters.getShort(0,j)==row && FTOFclusters.getInt(2,j)==2){
+          FTOFpredPath=(float)FTOFclusters.getDouble(4,j);
+          partout.putFloat(ftofoffsetout,row,FTOFpredPath); //pred path
+          partout.putFloat(ftofoffsetout+1,row,(float)FTOFclusters.getDouble(6,j)); //pred time
+          partout.putFloat(ftofoffsetout+2,row,(float)FTOFclusters.getDouble(3,j)); //pred comp
+        }
+      }
+      return FTOFpredPath;
+    }
+
+    public void predictPID(Leaf partout, float[] nInVars, float[] pred_pid,int charge, int sector, short row, double sumE, float sumHTCC, float FTOFpredPath){
+      if(charge==-1 && sector>0){
+        ElPIDModels[sector-1].predict(nInVars, pred_pid);
+        partout.putFloat(2,row,pred_pid[1]);
+        //for e- PID require good pred
+        //but also some sanity checks:
+        //non empty HTCC, ECAL, and track hit FTOF (eg good track)
+        if(pred_pid[1]>threshold_on_response && FTOFpredPath>0 && sumHTCC>0  && sumE>0){
+          partout.putInt(1,row,11);
+        } else {
+          //dummy PID, need worker for non el PID
+          partout.putInt(1,row,211); 
+        }
+
+      } else{
+        //dummy PID, need worker for non el PID
+        partout.putInt(1,row,211); 
+        partout.putFloat(2,row,(float)0.5);
+      }
+    }
     
  
     @Override
     public void execute(DataEvent event) {
         Leaf trackbank = new Leaf(32000,1,"i",4096);
         ((Event) event).read(trackbank);
-        Leaf ecalbank = new Leaf(42,12,"i",4096);
-        ((Event) event).read(ecalbank);
-        Leaf htccbank = new Leaf(42,13,"i",4096);
-        ((Event) event).read(htccbank);
-        Leaf ftofbank = new Leaf(42,14,"i",4096);
-        ((Event) event).read(ftofbank);
+        Leaf ECALclusters = new Leaf(32200,2,"i",4096);
+        ((Event) event).read(ECALclusters);
+        Leaf adc = new Leaf(42,12,"i",4096); //read htcc adc from here
+        ((Event) event).read(adc);
+        Leaf FTOFclusters = new Leaf(32200,3,"i",4096);
+        ((Event) event).read(FTOFclusters);
         //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
-        //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC sum ADC (same sector, before, after)
-        Leaf partout = new Leaf(32000,2,"sifssf3f3f6f9f3ffff",4096);
+        //6xwires, 9xec clusters, ftof (layer 2) path/time/component
+        //HTCC sum ADC (same sector, before, after)
+        Leaf partout = new Leaf(32200,1,"sifssf3f3f6f9f3ffff",4096);
 
         partout.setRows(trackbank.getRows()); 
         float[] nInVars=new float[51];
         float[] predicted_pid=new float[2];
-
-        //to fill array used for prediction
-        //and output array, need to know
-        //where to start putting variables
-        //call this offsets
-        int stripsoffset=3,stripsoffsetout=18;
-        int Dsoffset=12, htccoffset=27, htccoffsetout=30;
-        int wiresoffset=21,wiresoffsetout=12,wiresoffsetin=17;
-        int ftofoffsetout=27;
 
         for(short i=0;i<trackbank.getRows();i++){
           short charge=trackbank.getShort(3,i);
@@ -76,96 +188,16 @@ public class ElPIDWorker extends DataWorker {
           partout.putFloat(5,i,1); //dummy beta, need other worker
           partout.putShort(3,i,sector);
           partout.putShort(4,i,charge);
-          //add ps and vs from ai tracking in output
-          for (int j=6;j<12;j++){ partout.putFloat(j,i,(float)trackbank.getDouble(j-1,i));}
-
-          double sumE=0;
-          for(int j=0;j<3;j++){nInVars[j]=0;}
-          for(int j=0;j<ecalbank.getRows();j++){
-            //match cluster to track
-            if(ecalbank.getShort(0,j)==i){
-              if(ecalbank.getInt(2,j)!=0){
-                nInVars[ecalbank.getInt(2,j)-1+stripsoffset]=(float)ecalbank.getDouble(3,j);
-                nInVars[ecalbank.getInt(2,j)-1+Dsoffset]=ecalbank.getInt(5,j);
-                partout.putFloat(ecalbank.getInt(2,j)-1+stripsoffsetout,i,(float)ecalbank.getDouble(3,j));
-                sumE+=ecalbank.getDouble(4,j);
-                //sum energy in PCAL, ECIN, ECOUT
-                if(ecalbank.getInt(2,j)<4){
-                  nInVars[0]+=ecalbank.getDouble(4,j);
-                } else if(ecalbank.getInt(2,j)>=4 && ecalbank.getInt(2,j)<7){
-                  nInVars[1]+=ecalbank.getDouble(4,j);
-                } else if(ecalbank.getInt(2,j)>=7){
-                  nInVars[2]+=ecalbank.getDouble(4,j);
-                }
-              }
-            }
-          }
-
-          float FTOFpredPath=0;
-          //fill FTOF info
-          for(int j=0;j<ftofbank.getRows();j++){
-            if(ftofbank.getShort(0,j)==i && ftofbank.getInt(2,j)==2){
-              FTOFpredPath=(float)ftofbank.getDouble(4,j);
-              partout.putFloat(ftofoffsetout,i,FTOFpredPath); //pred path
-              partout.putFloat(ftofoffsetout+1,i,(float)ftofbank.getDouble(6,j)); //pred time
-              partout.putFloat(ftofoffsetout+2,i,(float)ftofbank.getDouble(3,j)); //pred comp
-            }
-          }
           
-          //fill wires, take average between two slopes
-          for (int j=0;j<6;j++){
-            nInVars[j+wiresoffset]=((float)trackbank.getDouble(j+wiresoffsetin,i)+(float)trackbank.getDouble(j+wiresoffsetin+6,i))/2;
-            partout.putFloat(j+wiresoffsetout,i, nInVars[j+wiresoffset]);
-          }
+          readTrackBank(trackbank,partout,nInVars,i);
 
-          float sumHTCC=0;
-          for(int j=0;j<8;j++){
-            nInVars[j+htccoffset]=(float)htccbank.getDouble(j+1,sector-1);
-            sumHTCC+=htccbank.getDouble(j+1,sector-1);
-          }
+          double sumE=readECALClusters(ECALclusters,partout,nInVars,i);
 
-          partout.putFloat(htccoffsetout,i,sumHTCC);
-
-          int sectorBefore=sector-1;
-          int sectorAfter=sector+1;
-          if(sector==1){sectorBefore=6;}
-          else if(sector==6){sectorAfter=1;}
-
-          float sumHTCCBefore=0;
-          for(int j=0;j<8;j++){
-            nInVars[j+htccoffset+8]=(float)htccbank.getDouble(j+1,sectorBefore-1);
-            sumHTCCBefore+=htccbank.getDouble(j+1,sectorBefore-1);
-          }
-
-          float sumHTCCAfter=0;
-          for(int j=0;j<8;j++){
-            nInVars[j+htccoffset+16]=(float)htccbank.getDouble(j+1,sectorAfter-1);
-            sumHTCCAfter+=htccbank.getDouble(j+1,sectorAfter-1);
-          }
-
-          partout.putFloat(htccoffsetout,i,sumHTCC);
-          partout.putFloat(htccoffsetout+1,i,sumHTCCBefore);
-          partout.putFloat(htccoffsetout+2,i,sumHTCCAfter);
-
-          if(charge==-1 && sector>0){
-            ElPIDModels[sector-1].predict(nInVars, predicted_pid);
-            partout.putFloat(2,i,predicted_pid[1]);
-            //for e- PID require good pred
-            //but also some sanity checks:
-            //non empty HTCC, ECAL, and track hit FTOF (eg good track)
-            if(predicted_pid[1]>threshold_on_response && FTOFpredPath>0 && sumHTCC>0  && sumE>0){
-              partout.putInt(1,i,11);
-            } else {
-              //dummy PID, need worker for non el PID
-              partout.putInt(1,i,211); 
-            }
-
-          } else{
-            //dummy PID, need worker for non el PID
-            partout.putInt(1,i,211); 
-            partout.putFloat(2,i,(float)0.5);
-          }
+          float FTOFpredPath=readFTOFClusters(FTOFclusters,partout,nInVars,i);
           
+          float sumHTCC=readHTCCadc(adc,partout,nInVars,i, sector);
+
+          predictPID(partout, nInVars, predicted_pid, charge, sector, i, sumE, sumHTCC, FTOFpredPath);
 
         }
 

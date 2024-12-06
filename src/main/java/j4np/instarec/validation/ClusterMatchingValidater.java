@@ -110,9 +110,9 @@ public class ClusterMatchingValidater {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(42, 15, "i", 1200);
-      Leaf pred_ECAL = new Leaf(42, 12, "i", 1200);
-      Leaf pred_FTOF = new Leaf(42, 14, "i", 1200);
+      Leaf part = new Leaf(32200, 99, "i", 1200);
+      Leaf pred_ECAL = new Leaf(32200, 2, "i", 1200);
+      Leaf pred_FTOF = new Leaf(32200, 3, "i", 1200);
 
       
       String calLayerSt="PCAL";
@@ -155,9 +155,9 @@ public class ClusterMatchingValidater {
         int out_start=3*calLayer;
 
         r.nextEvent(ev);
-        ev.read(part,42,15);
-        ev.read(pred_ECAL,42,12);
-        ev.read(pred_FTOF,42,14);
+        ev.read(part,32200,99);
+        ev.read(pred_ECAL,32200,2);
+        ev.read(pred_FTOF,32200,3);
         for(int row=0;row<part.getRows();row++){
 
 

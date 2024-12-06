@@ -37,9 +37,9 @@
                 <!-- <mainClass>j4np.instarec.workers.RunAppElPIDTraining</mainClass>  -->
                 <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
-                <mainClass>j4np.instarec.workers.RunAppValidation</mainClass>
+                <!-- <mainClass>j4np.instarec.workers.RunAppValidation</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidater</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.ElPIDValidater</mainClass> -->
+                <mainClass>j4np.instarec.validation.ElPIDValidater</mainClass>
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>

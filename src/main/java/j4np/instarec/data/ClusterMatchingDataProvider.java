@@ -126,11 +126,11 @@ public class ClusterMatchingDataProvider {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(42, 15, "i", 1200);
+      Leaf part = new Leaf(32200, 99, "i", 1200);
       
       while(r.hasNext() && count[0]<limTotNegEvs){
         r.nextEvent(ev);
-        ev.read(part,42,15);
+        ev.read(part,32200, 99);
         for(int row=0;row<part.getRows();row++){
           //only take particles that hit FTOF and all layers of ECAL
           if(isInAllLayers(part,row)){

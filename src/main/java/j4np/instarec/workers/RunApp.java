@@ -64,12 +64,11 @@ public class RunApp {
         TrackFinderWorker  finder = new TrackFinderWorker();
         ClusterFinderWorkerECAL  ecalfinder = new ClusterFinderWorkerECAL(pathToClusterFinder);
         ClusterFinderWorkerFTOF  ftoffinder = new ClusterFinderWorkerFTOF(pathToClusterFinder);
-        ConverterWorkerHTCC  htcc = new ConverterWorkerHTCC();
         ElPIDWorker elPID  = new ElPIDWorker(pathToElPID,threshold);
         
         finder.initNetworks();
         
-        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,ecalfinder,ftoffinder,htcc,elPID);
+        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,ecalfinder,ftoffinder,elPID);
         //List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder);
         
         List<DataActor>   actors = RunApp.createActors(6, 128, workers);

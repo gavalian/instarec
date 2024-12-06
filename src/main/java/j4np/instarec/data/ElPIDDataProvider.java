@@ -74,9 +74,9 @@ public class ElPIDDataProvider {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(42, 15, "i", 1200);
-      Leaf pred_ECAL = new Leaf(42, 12, "i", 1200);
-      Leaf pred_HTCC = new Leaf(42, 13, "i", 1200);
+      Leaf part = new Leaf(32200, 99, "i", 1200);
+      Leaf pred_ECAL = new Leaf(32200, 2, "i", 1200);
+      Leaf pred_HTCC = new Leaf(32200, 98, "i", 1200);
 
       Bank recpart = r.getBank("REC::Particle");
 
@@ -84,9 +84,9 @@ public class ElPIDDataProvider {
       
       while(r.hasNext() && count[0]<limTotNegEvs){
         r.nextEvent(ev);
-        ev.read(part,42,15);
-        ev.read(pred_ECAL,42,12);
-        ev.read(pred_HTCC,42,13);
+        ev.read(part,32200, 99);
+        ev.read(pred_ECAL,32200,2);
+        ev.read(pred_HTCC,32200,98);
         ev.read(recpart);
         for(int row=0;row<part.getRows();row++){
 
