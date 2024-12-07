@@ -105,7 +105,7 @@ public class ClusterMatchingValidater {
       DataList LtoSconv = readCSV("LtoStrip_convTable.csv",69);
 
       //output training sample size per sector
-      int count = 0;
+      int count = 0,counttot=0;
 
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
@@ -113,7 +113,6 @@ public class ClusterMatchingValidater {
       Leaf part = new Leaf(32200, 99, "i", 1200);
       Leaf pred_ECAL = new Leaf(32200, 2, "i", 1200);
       Leaf pred_FTOF = new Leaf(32200, 3, "i", 1200);
-
       
       String calLayerSt="PCAL";
       if(calLayer==1){
@@ -158,6 +157,8 @@ public class ClusterMatchingValidater {
         ev.read(part,32200,99);
         ev.read(pred_ECAL,32200,2);
         ev.read(pred_FTOF,32200,3);
+
+        counttot++;
         for(int row=0;row<part.getRows();row++){
 
 
@@ -263,7 +264,7 @@ public class ClusterMatchingValidater {
       p.addRequired("-in", "input name");
       p.parse(args);
         
-      ClusterMatchingValidater dp = new ClusterMatchingValidater();
+      ClusterMatchingValidater valid = new ClusterMatchingValidater();
 
       String[] chargeSt = new String[2];
       chargeSt[0]="negatives";
@@ -275,7 +276,7 @@ public class ClusterMatchingValidater {
       for(int lay=0;lay<3;lay++){
         for(int charge=0;charge<2;charge++){
           for(short sector=0;sector<1;sector++){ //7
-            dp.process(p.getOption("-in").stringValue(),150000,sector,chargeSt[charge],lay);
+            valid.process(p.getOption("-in").stringValue(),150000,sector,chargeSt[charge],lay);
           }
         }
       }

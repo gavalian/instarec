@@ -13,6 +13,9 @@ import j4np.hipo5.io.HipoReader;
 import j4np.hipo5.io.HipoWriter;
 import j4np.instarec.core.DriftChamberWorker;
 import j4np.instarec.core.TrackFinderWorker;
+import j4np.instarec.data.ElPIDDataProvider;
+import j4np.instarec.networks.TrainingElPID;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,8 +76,23 @@ public class RunAppElPIDTraining {
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
         
-        
         stream.run();
+
+        ElPIDDataProvider dp = new ElPIDDataProvider();
+        dp.process("w.h5", "training_data/ElPIDTrain",150000);
+
+        double desiredThreshold=0.99;
+
+        System.out.println("\n\n\nTraining v1");
+        String dataPath = "training_data/ElPIDTrain";
+        String networkPath = "etc/networks/ElPID/ElPID";
+        TrainingElPID.trainNetwork(dataPath, networkPath);
+        TrainingElPID.testNetwork(dataPath, networkPath, 0,desiredThreshold);
+        for (int j = 1; j < 7; j++) {
+          System.out.printf("\nTransfer training for sector %d\n", j);
+          TrainingElPID.transferTraining(dataPath, networkPath, j);
+          TrainingElPID.testNetwork(dataPath, networkPath, j,desiredThreshold);
+        }
         
     }
 }

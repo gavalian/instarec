@@ -80,7 +80,7 @@ public class ClusterFinderWorkerECAL extends DataWorker {
         Leaf trackbank = new Leaf(32000,1,"i",4096);
         ((Event) event).read(trackbank);
         //track bank row, sector, ecal layer, strip, energy in cluster, n strips fire in cluster
-        Leaf clusters = new Leaf(32200,2,"ssiffi",4096);
+        Leaf clusters = new Leaf(32200,2,"ssiffi",16384);//4096
 
         float[] track= new float[6];
         float[] predicted_clusterpos = new float[nPredictedOutput];
