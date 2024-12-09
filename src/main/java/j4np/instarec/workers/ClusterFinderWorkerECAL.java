@@ -64,12 +64,12 @@ public class ClusterFinderWorkerECAL extends DataWorker {
       }
 
       for(short lay=0;lay<9;lay++){
-        clusters.putShort(0, row+lay, row);
-        clusters.putShort(1, row+lay, pred_sector);
-        clusters.putInt(2, row+lay, lay+1);
-        clusters.putFloat(3,row+lay,pred_cf[lay]);
-        clusters.putFloat(4,row+lay,energy[lay]);
-        clusters.putInt(5,row+lay,DU[lay]);
+        clusters.putShort(0, 9*row+lay, row);
+        clusters.putShort(1, 9*row+lay, pred_sector);
+        clusters.putInt(2, 9*row+lay, lay+1);
+        clusters.putFloat(3,9*row+lay,pred_cf[lay]);
+        clusters.putFloat(4,9*row+lay,energy[lay]);
+        clusters.putInt(5,9*row+lay,DU[lay]);
       }
     }
  
