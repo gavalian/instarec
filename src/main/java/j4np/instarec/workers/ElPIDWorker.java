@@ -148,7 +148,7 @@ public class ElPIDWorker extends DataWorker {
           partout.putInt(1,row,11);
         } else {
           //dummy PID, need worker for non el PID
-          partout.putInt(1,row,211); 
+          partout.putInt(1,row,-211); 
         }
 
       } else{

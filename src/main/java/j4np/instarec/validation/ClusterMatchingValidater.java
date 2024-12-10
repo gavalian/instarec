@@ -124,28 +124,33 @@ public class ClusterMatchingValidater {
       int desired_charge=-1;
       if(desired_chargeSt=="positives"){desired_charge=1;}
 
-      H1F hDifU = new H1F("U View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 21, -10.5, 10.5);
+      H1F hDifU = new H1F("U View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifU.attr().setLineColor(2);
+      hDifU.attr().setLineWidth(3);
       hDifU.attr().setLineWidth(3);
       hDifU.attr().setTitleX("Position Difference [strips]");
 
-      H1F hDifV = new H1F("V View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 21, -10.5, 10.5);
+      H1F hDifV = new H1F("V View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifV.attr().setLineColor(5);
+      hDifV.attr().setLineWidth(3);
       hDifV.attr().setLineWidth(3);
       hDifV.attr().setTitleX("Position Difference [strips]");
 
-      H1F hDifW = new H1F("W View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 21, -10.5, 10.5);
+      H1F hDifW = new H1F("W View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifW.attr().setLineColor(3);
+      hDifW.attr().setLineWidth(3);
       hDifW.attr().setLineWidth(3);
       hDifW.attr().setTitleX("Position Difference [strips]");
 
       H1F hDifP = new H1F("FTOF Path ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 100, -10, 10);
       hDifP.attr().setLineColor(2);
       hDifP.attr().setLineWidth(3);
+      hDifP.attr().setLineWidth(3);
       hDifP.attr().setTitleX("Path Difference [cm]");
 
       H1F hDif = new H1F("FTOF Component ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 11, -5.5, 5.5);
       hDif.attr().setLineColor(2);
+      hDif.attr().setLineWidth(3);
       hDif.attr().setLineWidth(3);
       hDif.attr().setTitleX("Position Difference [component]");
       

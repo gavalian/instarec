@@ -117,7 +117,7 @@ public class RunAppValidation {
         phibins[2]=(float)180;
 
         ElPIDValidater validpid = new ElPIDValidater();
-        validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false);
+        validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
         
     }
 }

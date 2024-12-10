@@ -7,10 +7,6 @@ package j4np.instarec.validation;
 import j4np.hipo5.data.Leaf;
 import j4np.hipo5.data.Event;
 import j4np.hipo5.io.HipoReader;
-import j4np.instarec.networks.TrainingClusterFinder;
-import j4np.instarec.utils.DataEntry;
-import j4np.instarec.utils.DataList;
-import j4np.instarec.utils.NeuralModel;
 import j4np.utils.io.OptionParser;
 import twig.data.GraphErrors;
 import twig.data.H1F;
@@ -20,11 +16,7 @@ import twig.data.TDirectory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 //for priting
 import j4np.hipo5.data.Bank;
@@ -74,7 +66,7 @@ public class ElPIDValidater {
       return mets;
     }
 
-    public void makeGraphs(int nbins, float effLow,float[] bincentre, float[] TP, float[] FP, float[] FN,String name, String title, String units){
+    public void makeGraphs(int nbins, float effLow,float[] bincentre, float[] TP, float[] FP, float[] FN,String name, String title, String units, String endName, Boolean print){
       GraphErrors gEff = new GraphErrors();
       gEff.attr().setMarkerColor(2);
       gEff.attr().setMarkerSize(10);
@@ -108,15 +100,71 @@ public class ElPIDValidater {
         }
       }
 
-      System.out.format("%n Best Purity at Efficiency above %f: %.3f at %.3f in "+title+" "+units+" \n\n",
-        effLow, bestPuratEffLow, bestBin);
+      if(print){
+        System.out.format("%n Best Purity at Efficiency above %f: %.3f at %.3f in "+title+" "+units+" \n\n",
+          effLow, bestPuratEffLow, bestBin);
+      }
 
-      TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Purity_"+name, gPur);
-      TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Efficiency_"+name, gEff);
+      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Purity_"+name, gPur);
+      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Efficiency_"+name, gEff);
 
     }
+
+    public Boolean passFid(Leaf part,int row){
+      Boolean pass = true;
+      for(int k = 18; k < 27; k++){
+        //want to be good track ie  part.getDouble(k,row)>0
+        //but also not close to edge
+        if(part.getDouble(k,row)<9 && part.getDouble(k,row)>0 ){
+          pass=false;
+        }
+      }
+      return pass;
+    }
+
+    //returns false when all predicted ECAL strips or FTOF comp are zero
+    //ie pred missed detector
+    //this often indicates a bad track
+    public Boolean trackOutOfDet(Leaf part, int row) {
+  
+      if (part.getDouble(18,row)==0 && part.getDouble(19,row)==0 && part.getDouble(20,row)==0) {
+        return true;
+      }
+  
+      if (part.getDouble(21,row)==0 && part.getDouble(22,row)==0 && part.getDouble(23,row)==0) {
+        return true;
+      }
+  
+      if (part.getDouble(24,row)==0 && part.getDouble(25,row)==0 && part.getDouble(26,row)==0) {
+        return true;
+      }
+
+      if (part.getDouble(29,row)==0 ) {
+        return true;
+      }
+
+      return false;
+    }
+
+    //returns false when all predicted ECAL strips or FTOF comp are zero
+    //ie pred missed detector
+    //this often indicates a bad track
+    public int countTracksInSector(Leaf part, int sector) {
+
+      int nSect=0;
+      for(int row=0;row<part.getRows();row++){
+        short sect = part.getShort(3,row);
+        if(sect==sector){
+          nSect++;
+        }
+      }
+      return nSect;
+    }
+
+
     
-    public void process(String file, int limTotNegEvs,double threshold, float[] respbins, float[] pbins, float[] thetabins, float[] phibins, float effLow, Boolean print){
+    
+    public void process(String file, int limTotNegEvs,double threshold, float[] respbins, float[] pbins, float[] thetabins, float[] phibins, float effLow, Boolean print, String endName){
 
       float TP=0,FP=0,FN=0;
 
@@ -234,7 +282,10 @@ public class ElPIDValidater {
           //require neg parts in FD
           //require tracks matched to rec part
           //only estimating el pid metrics not tracking!
-          if(sector>0 && charge==-1 && pindex!=999){
+          //apply fiducial cuts and ask for good track
+          //tracking sometimes creates too many tracks in same sector
+          //only take one track per sector for now
+          if(sector>0 && charge==-1 && pindex!=999  && countTracksInSector(part,sector)==1){
 
             double totHTCC=pred_part.getDouble(30,row)+pred_part.getDouble(31,row)+pred_part.getDouble(32,row);
             if(recpid==11 && totHTCC!=0){ 
@@ -243,19 +294,23 @@ public class ElPIDValidater {
                if(print){
                 if(resp<0.01){
                   System.out.println("Have one true e- with resp <0.01:");
-                  System.out.println("rec part");
+                  System.out.println("\n rec part");
                   recpart.show();
-                  System.out.println("part ");
+                  System.out.println("\n part ");
                   part.print();
-                  System.out.println("pred part ");
+                  System.out.println("\n pred part ");
                   pred_part.print();
-                  System.out.println("htcc ");
+                  System.out.println("\n ECAL cluster ");
+                  ecalbank.print();
+                  System.out.println("\n FTOF cluster ");
+                  ftofbank.print();
+                  System.out.println("\n htcc ");
                   htccbank.print();
-                  System.out.println("track ");
+                  System.out.println("\n track ");
                   trackbank.print();
-                  System.out.println("rec cal");
+                  System.out.println("\n rec cal");
                   reccal.show();
-                  System.out.println("rec htcc");
+                  System.out.println("\n rec htcc");
                   rechtcc.show();
                 }
               }
@@ -317,20 +372,17 @@ public class ElPIDValidater {
         }
       }
 
-      TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Resp", hRespPos);
-      TDirectory.export("plots/ElPID0" + ".twig", "/ai/validation/Resp", hRespNeg);
+      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespPos);
+      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespNeg);
 
       System.out.printf("\nTP %f FP %f FN %f \n",TP,FP,FN);
 
-      makeGraphs(nrespBins,effLow,bincentre_resp,TP_resp,FP_resp,FN_resp,"resp","Response","");
-      makeGraphs(npBins,effLow,bincentre_p,TP_p,FP_p,FN_p,"P","Momentum","[GeV]");
-      makeGraphs(nthetaBins,effLow,bincentre_theta,TP_theta,FP_theta,FN_theta,"theta","Theta","[Degrees]");
-      makeGraphs(nphiBins,effLow,bincentre_phi,TP_phi,FP_phi,FN_phi,"phi","Phi","[Degrees]");
+      makeGraphs(nrespBins,effLow,bincentre_resp,TP_resp,FP_resp,FN_resp,"resp","Response","", endName,true);
+      makeGraphs(npBins,effLow,bincentre_p,TP_p,FP_p,FN_p,"P","Momentum","[GeV]", endName,false);
+      makeGraphs(nthetaBins,effLow,bincentre_theta,TP_theta,FP_theta,FN_theta,"theta","Theta","[Degrees]", endName,false);
+      makeGraphs(nphiBins,effLow,bincentre_phi,TP_phi,FP_phi,FN_phi,"phi","Phi","[Degrees]", endName,false);
 
-
-      
     }
-
     
     public void delete_existing_output(String output){
       // Specify the path where you want to save the CSV file
@@ -354,6 +406,8 @@ public class ElPIDValidater {
       p.addRequired("-in", "input name");
       p.parse(args);
 
+      String endName="_noFid"; // used to change output path of plots (eg adding _NoFiducialCuts)
+
       float[] respbins = new float[3];
       respbins[0]=(float)0.01;
       respbins[1]=(float)0.01;
@@ -375,7 +429,7 @@ public class ElPIDValidater {
       phibins[2]=(float)180;
         
       ElPIDValidater dp = new ElPIDValidater();
-      dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false);
+      dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,true,endName);
   
       
       
