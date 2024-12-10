@@ -25,9 +25,9 @@ import j4np.hipo5.data.Bank;
  *
  * @author tyson
  */
-public class ElPIDValidater {
+public class ElPIDValidator {
     
-    public ElPIDValidater(){
+    public ElPIDValidator(){
     }
 
     public int[] checkmets(float resp, double threshold, int pid,double htcc){
@@ -428,7 +428,7 @@ public class ElPIDValidater {
       phibins[1]=(float)-180;
       phibins[2]=(float)180;
         
-      ElPIDValidater dp = new ElPIDValidater();
+      ElPIDValidator dp = new ElPIDValidator();
       dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,true,endName);
   
       

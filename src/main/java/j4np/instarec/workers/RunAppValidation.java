@@ -13,8 +13,8 @@ import j4np.hipo5.io.HipoReader;
 import j4np.hipo5.io.HipoWriter;
 import j4np.instarec.core.DriftChamberWorker;
 import j4np.instarec.core.TrackFinderWorker;
-import j4np.instarec.validation.ClusterMatchingValidater;
-import j4np.instarec.validation.ElPIDValidater;
+import j4np.instarec.validation.ClusterMatchingValidator;
+import j4np.instarec.validation.ElPIDValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +79,7 @@ public class RunAppValidation {
         
         stream.run();
 
-        ClusterMatchingValidater valid = new ClusterMatchingValidater();
+        ClusterMatchingValidator valid = new ClusterMatchingValidator();
 
         String[] chargeSt = new String[2];
         chargeSt[0]="negatives";
@@ -116,7 +116,7 @@ public class RunAppValidation {
         phibins[1]=(float)-180;
         phibins[2]=(float)180;
 
-        ElPIDValidater validpid = new ElPIDValidater();
+        ElPIDValidator validpid = new ElPIDValidator();
         validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
         
     }
