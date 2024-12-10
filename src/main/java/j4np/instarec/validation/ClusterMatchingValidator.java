@@ -7,10 +7,8 @@ package j4np.instarec.validation;
 import j4np.hipo5.data.Leaf;
 import j4np.hipo5.data.Event;
 import j4np.hipo5.io.HipoReader;
-import j4np.instarec.networks.TrainingClusterFinder;
 import j4np.instarec.utils.DataEntry;
 import j4np.instarec.utils.DataList;
-import j4np.instarec.utils.NeuralModel;
 import j4np.utils.io.OptionParser;
 import twig.data.H1F;
 import twig.data.TDirectory;
@@ -20,17 +18,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 /**
  *
  * @author tyson
  */
-public class ClusterMatchingValidater {
+public class ClusterMatchingValidator {
     
-    public ClusterMatchingValidater(){
+    public ClusterMatchingValidator(){
     }
 
     // convert local U/V/W position in ECAL to strip numbers
@@ -269,7 +265,7 @@ public class ClusterMatchingValidater {
       p.addRequired("-in", "input name");
       p.parse(args);
         
-      ClusterMatchingValidater valid = new ClusterMatchingValidater();
+      ClusterMatchingValidator valid = new ClusterMatchingValidator();
 
       String[] chargeSt = new String[2];
       chargeSt[0]="negatives";
