@@ -38,8 +38,11 @@
                 <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
                 <mainClass>j4np.instarec.workers.RunAppValidation</mainClass>
-                <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidater</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.ElPIDValidater</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.ElPIDValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.RadPhotonValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.TrackingValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.SectorTrackingValidator</mainClass> -->
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>

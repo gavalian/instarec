@@ -13,8 +13,8 @@ import j4np.hipo5.io.HipoReader;
 import j4np.hipo5.io.HipoWriter;
 import j4np.instarec.core.DriftChamberWorker;
 import j4np.instarec.core.TrackFinderWorker;
-import j4np.instarec.validation.ClusterMatchingValidater;
-import j4np.instarec.validation.ElPIDValidater;
+import j4np.instarec.validation.ClusterMatchingValidator;
+import j4np.instarec.validation.ElPIDValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,8 +46,8 @@ public class RunAppValidation {
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-        String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
-        // String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+         String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
+        //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -79,7 +79,7 @@ public class RunAppValidation {
         
         stream.run();
 
-        ClusterMatchingValidater valid = new ClusterMatchingValidater();
+        ClusterMatchingValidator valid = new ClusterMatchingValidator();
 
         String[] chargeSt = new String[2];
         chargeSt[0]="negatives";
@@ -116,7 +116,7 @@ public class RunAppValidation {
         phibins[1]=(float)-180;
         phibins[2]=(float)180;
 
-        ElPIDValidater validpid = new ElPIDValidater();
+        ElPIDValidator validpid = new ElPIDValidator();
         validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
         
     }

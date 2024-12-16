@@ -25,9 +25,9 @@ import j4np.hipo5.data.Bank;
  *
  * @author tyson
  */
-public class ElPIDValidater {
+public class ElPIDValidator {
     
-    public ElPIDValidater(){
+    public ElPIDValidator(){
     }
 
     public int[] checkmets(float resp, double threshold, int pid,double htcc){
@@ -50,7 +50,7 @@ public class ElPIDValidater {
     }
 
     public StatNumber[] calcMets(float TP, float FP, float FN){
-      StatNumber Pur = new StatNumber(TP, Math.sqrt(TP));
+      /*StatNumber Pur = new StatNumber(TP, Math.sqrt(TP));
       StatNumber Eff = new StatNumber(TP, Math.sqrt(TP));
       StatNumber FPs = new StatNumber(FP, Math.sqrt(FP));
       StatNumber FNs = new StatNumber(FN, Math.sqrt(FN));
@@ -59,7 +59,17 @@ public class ElPIDValidater {
       denomPur.add(FPs);
       denomEff.add(FNs);
       Pur.divide(denomPur);
-      Eff.divide(denomEff);
+      Eff.divide(denomEff);*/
+
+      double Effn=TP/(TP+FN);
+      double EffErr=Math.sqrt(((TP+1)/(TP+FN+2))*((TP+2)/(TP+FN+3))-((TP+1)/(TP+FN+2))*((TP+1)/(TP+FN+2)));
+
+      double Purn=TP/(TP+FP);
+      double PurErr=Math.sqrt(((TP+1)/(TP+FP+2))*((TP+2)/(TP+FP+3))-((TP+1)/(TP+FP+2))*((TP+1)/(TP+FP+2)));
+
+      StatNumber Pur=new StatNumber(Purn,PurErr);
+      StatNumber Eff=new StatNumber(Effn,EffErr);
+
       StatNumber[] mets = new StatNumber[2];
       mets[0] = Pur;
       mets[1] = Eff;
@@ -113,9 +123,8 @@ public class ElPIDValidater {
     public Boolean passFid(Leaf part,int row){
       Boolean pass = true;
       for(int k = 18; k < 27; k++){
-        //want to be good track ie  part.getDouble(k,row)>0
         //but also not close to edge
-        if(part.getDouble(k,row)<9 && part.getDouble(k,row)>0 ){
+        if(part.getDouble(k,row)<9 ){
           pass=false;
         }
       }
@@ -247,6 +256,9 @@ public class ElPIDValidater {
       hRespNeg.attr().setLineColor(5);
       hRespNeg.attr().setLineWidth(3);
       hRespNeg.attr().setTitleX("Response");
+
+      //don't count if set limTotNegEvs=-1
+      if(limTotNegEvs==-1){count=-2;}
       
       while(r.hasNext() && count<limTotNegEvs){
 
@@ -284,14 +296,17 @@ public class ElPIDValidater {
           //only estimating el pid metrics not tracking!
           //apply fiducial cuts and ask for good track
           //tracking sometimes creates too many tracks in same sector
-          //only take one track per sector for now
-          if(sector>0 && charge==-1 && pindex!=999  && countTracksInSector(part,sector)==1){
+          //only take one track per sector ? && countTracksInSector(part,sector)==1
+          if(sector>0 && charge==-1 && pindex!=999 && passFid(pred_part, row) && !trackOutOfDet(pred_part,row) ){
+            if(limTotNegEvs!=-1){
+              count++;
+            }
 
             double totHTCC=pred_part.getDouble(30,row)+pred_part.getDouble(31,row)+pred_part.getDouble(32,row);
             if(recpid==11 && totHTCC!=0){ 
               hRespPos.fill(resp);
                /*priting stuff */
-               if(print){
+               /*if(print){
                 if(resp<0.01){
                   System.out.println("Have one true e- with resp <0.01:");
                   System.out.println("\n rec part");
@@ -313,10 +328,12 @@ public class ElPIDValidater {
                   System.out.println("\n rec htcc");
                   rechtcc.show();
                 }
-              }
+              }*/
             
             }
-            else{hRespNeg.fill(resp);}
+            else{
+              hRespNeg.fill(resp);
+            }
 
             int[] mets=checkmets(resp,threshold,recpid,totHTCC);
             TP+=mets[0];
@@ -401,12 +418,12 @@ public class ElPIDValidater {
     
     public static void main(String[] args){
         
-      System.out.println("----- starting electron PID validator ");
+      System.out.println("\n\n----- starting electron PID validator ");
       OptionParser p = new OptionParser();
       p.addRequired("-in", "input name");
       p.parse(args);
 
-      String endName="_noFid"; // used to change output path of plots (eg adding _NoFiducialCuts)
+      String endName=""; // used to change output path of plots (eg adding _NoFiducialCuts)
 
       float[] respbins = new float[3];
       respbins[0]=(float)0.01;
@@ -416,11 +433,11 @@ public class ElPIDValidater {
       float[] pbins = new float[3];
       pbins[0]=(float)1;
       pbins[1]=(float)1;
-      pbins[2]=(float)9;
+      pbins[2]=(float)8;
 
       float[] thetabins = new float[3];
       thetabins[0]=(float)5;
-      thetabins[1]=(float)5;
+      thetabins[1]=(float)10;
       thetabins[2]=(float)35;
 
       float[] phibins = new float[3];
@@ -428,7 +445,7 @@ public class ElPIDValidater {
       phibins[1]=(float)-180;
       phibins[2]=(float)180;
         
-      ElPIDValidater dp = new ElPIDValidater();
+      ElPIDValidator dp = new ElPIDValidator();
       dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,true,endName);
   
       
