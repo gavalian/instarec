@@ -8,15 +8,11 @@ import j4np.hipo5.data.Leaf;
 import j4np.hipo5.data.Bank;
 import j4np.hipo5.data.Event;
 import j4np.hipo5.io.HipoReader;
-import j4np.instarec.utils.DataEntry;
-import j4np.instarec.utils.DataList;
 import j4np.utils.io.OptionParser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -45,7 +41,7 @@ public class ElPIDDataProvider {
         double pxphoton = RECPart.getFloat("px", i);
         double pyphoton = RECPart.getFloat("py", i);
         double pphoton=Math.sqrt(pxphoton*pxphoton+pyphoton*pyphoton+pzphoton*pzphoton);
-        double Thetaphoton = Math.acos(pzphoton / p)*(180/Math.PI);// Math.atan2(Math.sqrt(pxphoton*pxphoton+pyphoton*pyphoton),pzphoton);
+        double Thetaphoton = Math.acos(pzphoton / pphoton)*(180/Math.PI);// Math.atan2(Math.sqrt(pxphoton*pxphoton+pyphoton*pyphoton),pzphoton);
         double Phiphoton = Math.atan2(pyphoton, pxphoton)*(180/Math.PI);
         //just use charge and not pid because some photons missided as neutrons
         if(Math.abs(Theta-Thetaphoton)<0.5 && charge==0){

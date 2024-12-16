@@ -46,8 +46,8 @@ public class RunAppValidation {
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-        String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
-        // String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        // String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
+        String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -79,7 +79,7 @@ public class RunAppValidation {
         
         stream.run();
 
-        ClusterMatchingValidator valid = new ClusterMatchingValidator();
+        /*ClusterMatchingValidator valid = new ClusterMatchingValidator();
 
         String[] chargeSt = new String[2];
         chargeSt[0]="negatives";
@@ -117,7 +117,7 @@ public class RunAppValidation {
         phibins[2]=(float)180;
 
         ElPIDValidator validpid = new ElPIDValidator();
-        validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
+        validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");*/
         
     }
 }

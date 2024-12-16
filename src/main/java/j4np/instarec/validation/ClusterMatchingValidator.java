@@ -260,7 +260,7 @@ public class ClusterMatchingValidator {
     
     public static void main(String[] args){
         
-      System.out.println("----- starting cluster finder data validater ");
+      System.out.println("\n\n----- starting cluster finder data validater ");
       OptionParser p = new OptionParser();
       p.addRequired("-in", "input name");
       p.parse(args);
