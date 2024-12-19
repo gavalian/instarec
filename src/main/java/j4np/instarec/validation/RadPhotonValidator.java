@@ -262,7 +262,7 @@ public class RadPhotonValidator {
                 hEP.fill(electron[1],elEs[0]);
         
                 //make sure part is good electron candidate
-                if(elEs[0]>0.06 && elEs[3]>0.15 && totHTCC!=0 && !passFid(elLs)){// elEs[5] > (0.15 - elEs[4]) 
+                if(elEs[0]>0.06 && elEs[3]>0.15 && totHTCC!=0 && passFid(elLs)){// elEs[5] > (0.15 - elEs[4]) 
 
                   hThetaPhi.fill(dTheta, dPhi);
                   

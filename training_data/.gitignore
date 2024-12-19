@@ -1,0 +1,4 @@
+# Ignore everything in this directory
+*
+# Except this file, so that plots can be made with no issue
+!.gitignore

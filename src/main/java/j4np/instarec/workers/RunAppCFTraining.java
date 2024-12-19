@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  *
- * @author gavalian
+ * @author tyson
  */
 public class RunAppCFTraining {
     public static DataFrame createFrames(int count){
