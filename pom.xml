@@ -31,18 +31,21 @@
             <archive>
               <manifest>
                 <!-- Specify the main class -->
+                <mainClass>j4np.instarec.workers.RunApp</mainClass>
                 <!-- <mainClass>j4np.instarec.workers.RunAppCFTraining</mainClass>  -->
                 <!-- <mainClass>j4np.instarec.data.ClusterMatchingDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingClusterFinder</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppElPIDTraining</mainClass>  -->
                 <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
-                <mainClass>j4np.instarec.workers.RunAppValidation</mainClass>
+                <!-- <mainClass>j4np.instarec.workers.RunAppValidation</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElPIDValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.RadPhotonValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.TrackingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.SectorTrackingValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>
