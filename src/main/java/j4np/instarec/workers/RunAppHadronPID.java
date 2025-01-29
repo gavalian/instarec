@@ -58,11 +58,11 @@ public class RunAppHadronPID {
         ClusterFinderWorkerECAL ecalfinder = new ClusterFinderWorkerECAL(pathToClusterFinder);
         ClusterFinderWorkerFTOF ftoffinder = new ClusterFinderWorkerFTOF(pathToClusterFinder);
         ElPIDWorker elPID = new ElPIDWorker(pathToElPID, threshold);
-        StartTimeWorker startTimeWorker = new StartTimeWorker(); // Include your StartTimeWorker
+        StartTimeWorker startTimeWorker = new StartTimeWorker(); 
 
         finder.initNetworks();
 
-        // Add all workers, including StartTimeWorker
+       
         List<DataWorker> workers = Arrays.asList(
                 convert,
                 dcwrk,
@@ -70,7 +70,7 @@ public class RunAppHadronPID {
                 ecalfinder,
                 ftoffinder,
                 elPID,
-                startTimeWorker // Add StartTimeWorker to the pipeline
+                startTimeWorker 
         );
 
         List<DataActor> actors = RunApp.createActors(1, 128, workers);
