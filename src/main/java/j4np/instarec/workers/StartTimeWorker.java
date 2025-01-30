@@ -25,8 +25,8 @@ public class StartTimeWorker extends DataWorker {
         // Speed of light in cm/ns
         double c = 29.9792;
         // Get time of flight and path from partout bank written by ElPID worker:
-        double t_flight = partout.getFloat(27, row);
-        double path = partout.getFloat(28, row);
+        double t_flight = partout.getFloat(28, row);
+        double path = partout.getFloat(27, row);
         // Calculate start time for the event assuming beta=1:
         double t_0 = t_flight - (path / c);
         System.out.println("Start Time: " + t_0);
