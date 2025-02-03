@@ -12,6 +12,11 @@
         <artifactId>j4np-instarec</artifactId>
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>j4np</groupId>
+        <artifactId>j4np-clas12io</artifactId>
+        <version>${revision}</version>
+      </dependency>
     </dependencies>
 
     <build>
@@ -27,24 +32,6 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>2.6</version>
           <configuration>
-          <!-- Maven JAR Plugin for specifying Main-Class -->
-            <archive>
-              <manifest>
-                <!-- Specify the main class -->
-                <!-- <mainClass>j4np.instarec.workers.RunAppCFTraining</mainClass>  -->
-                <!-- <mainClass>j4np.instarec.data.ClusterMatchingDataProvider</mainClass> -->
-                <!-- <mainClass>j4np.instarec.networks.TrainingClusterFinder</mainClass> -->
-                <!-- <mainClass>j4np.instarec.workers.RunAppElPIDTraining</mainClass>  -->
-                <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
-                <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
-                <mainClass>j4np.instarec.workers.RunAppValidation</mainClass>
-                <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidator</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.ElPIDValidator</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.RadPhotonValidator</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.TrackingValidator</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.SectorTrackingValidator</mainClass> -->
-              </manifest>
-            </archive> <!-- until here -->
             <descriptorRefs>
               <descriptorRef>jar-with-dependencies</descriptorRef>
             </descriptorRefs>
@@ -64,15 +51,15 @@
 
     <repositories>
       <repository>
-	      <id>clas12-maven</id>
-	      <url>https://clasweb.jlab.org/clas12maven/j4np/maven</url>
+	<id>clas12-maven</id>
+	<url>https://clasweb.jlab.org/clas12maven/j4np/maven</url>
       </repository>
     </repositories>
     
     <distributionManagement>
       <repository>
-	      <id>ssh-clasweb</id>
-	      <url>scpexe://jlabl1.jlab.org/group/clas/www/clasweb/html/clas12maven/j4np/maven</url>
+	<id>ssh-clasweb</id>
+	<url>scpexe://jlabl1.jlab.org/group/clas/www/clasweb/html/clas12maven/j4np/maven</url>
       </repository>
     </distributionManagement>
     
