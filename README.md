@@ -4,6 +4,13 @@ Track Reconstruction with AI
 # Usage
 
 The reconstruction works on EVIO files, The code in class RunApp.java processes the file (raw EVIO) and creates a hybrid file with EVIO and H5 containers.
+
+First the EVIO file must be converted to EVIO-6/HIPO format, using
+
+```
+prompt> j4np.sh c12 -convert -o input.hipo data.evio
+```
+
 Then the reconstruction code must be run on the produced HIPO-5 file by downloading coatjava branch "iss-442":
 
 ```
