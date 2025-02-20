@@ -120,35 +120,80 @@ public class ClusterMatchingValidator {
       int desired_charge=-1;
       if(desired_chargeSt=="positives"){desired_charge=1;}
 
-      H1F hDifU = new H1F("U View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
+      H1F hDifU = new H1F("U View Dif ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifU.attr().setLineColor(2);
-      hDifU.attr().setLineWidth(3);
       hDifU.attr().setLineWidth(3);
       hDifU.attr().setTitleX("Position Difference [strips]");
 
-      H1F hDifV = new H1F("V View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
+      H1F hDifV = new H1F("V View Dif ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifV.attr().setLineColor(5);
-      hDifV.attr().setLineWidth(3);
       hDifV.attr().setLineWidth(3);
       hDifV.attr().setTitleX("Position Difference [strips]");
 
-      H1F hDifW = new H1F("W View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
+      H1F hDifW = new H1F("W View Dif ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 11,-5.5,5.5);
       hDifW.attr().setLineColor(3);
-      hDifW.attr().setLineWidth(3);
       hDifW.attr().setLineWidth(3);
       hDifW.attr().setTitleX("Position Difference [strips]");
 
-      H1F hDifP = new H1F("FTOF Path ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 100, -10, 10);
+      H1F hDifP = new H1F("FTOF Path Dif ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 100, -10, 10);
       hDifP.attr().setLineColor(2);
-      hDifP.attr().setLineWidth(3);
       hDifP.attr().setLineWidth(3);
       hDifP.attr().setTitleX("Path Difference [cm]");
 
-      H1F hDif = new H1F("FTOF Component ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 11, -5.5, 5.5);
+      H1F hDif = new H1F("FTOF Component Dif ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 11, -5.5, 5.5);
       hDif.attr().setLineColor(2);
       hDif.attr().setLineWidth(3);
-      hDif.attr().setLineWidth(3);
       hDif.attr().setTitleX("Position Difference [component]");
+
+      H1F hU = new H1F("U View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hU.attr().setLineColor(2);
+      hU.attr().setLineWidth(3);
+      hU.attr().setTitleX("Position [strips]");
+
+      H1F hV = new H1F("V View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hV.attr().setLineColor(2);
+      hV.attr().setLineWidth(3);
+      hV.attr().setTitleX("Position [strips]");
+
+      H1F hW = new H1F("W View ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hW.attr().setLineColor(2);
+      hW.attr().setLineWidth(3);
+      hW.attr().setTitleX("Position [strips]");
+
+      H1F hPath = new H1F("FTOF Path ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 100, 650,750);
+      hPath.attr().setLineColor(2);
+      hPath.attr().setLineWidth(3);
+      hPath.attr().setTitleX("Path [cm]");
+
+      H1F hComp = new H1F("FTOF Component ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 66,-0.5,65.5);
+      hComp.attr().setLineColor(2);
+      hComp.attr().setLineWidth(3);
+      hComp.attr().setTitleX("Position [component]");
+
+      H1F hUPred = new H1F("U View Pred ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hUPred.attr().setLineColor(5);
+      hUPred.attr().setLineWidth(3);
+      hUPred.attr().setTitleX("Position [strips]");
+
+      H1F hVPred = new H1F("V View Pred ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hVPred.attr().setLineColor(5);
+      hVPred.attr().setLineWidth(3);
+      hVPred.attr().setTitleX("Position [strips]");
+
+      H1F hWPred = new H1F("W View Pred ( "+calLayerSt+", "+desired_chargeSt+", "+String.valueOf(desired_sector)+")", 101,-0.5,100.5);
+      hWPred.attr().setLineColor(5);
+      hWPred.attr().setLineWidth(3);
+      hWPred.attr().setTitleX("Position [strips]");
+
+      H1F hPathPred = new H1F("FTOF Path Pred ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 100, 650,750);
+      hPathPred.attr().setLineColor(5);
+      hPathPred.attr().setLineWidth(3);
+      hPathPred.attr().setTitleX("Path [cm]");
+
+      H1F hCompPred = new H1F("FTOF Component Pred ("+desired_chargeSt+" "+String.valueOf(desired_sector)+")", 66,-0.5,65.5);
+      hCompPred.attr().setLineColor(5);
+      hCompPred.attr().setLineWidth(3);
+      hCompPred.attr().setTitleX("Position [component]");
       
       while(r.hasNext() && count<limTotNegEvs){
 
@@ -223,6 +268,16 @@ public class ClusterMatchingValidator {
             hDifW.fill((strips[out_start + 2] - pred_strips[out_start + 2]));
             hDif.fill((strips[9] - pred_strips[9]));
             hDifP.fill((strips[10] - pred_strips[10]));
+            hU.fill(strips[out_start + 0]);
+            hV.fill(strips[out_start + 1]);
+            hW.fill(strips[out_start + 2]);
+            hComp.fill(strips[9]);
+            hPath.fill(strips[10]);
+            hUPred.fill(pred_strips[out_start + 0]);
+            hVPred.fill(pred_strips[out_start + 1]);
+            hWPred.fill(pred_strips[out_start + 2]);
+            hCompPred.fill(pred_strips[9]);
+            hPathPred.fill(pred_strips[10]);
             count++;
           }
           
@@ -231,9 +286,19 @@ public class ClusterMatchingValidator {
       TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hDifU);
       TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hDifV);
       TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hDifW);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hU);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hV);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hW);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hUPred);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hVPred);
+      TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/"+String.valueOf(calLayerSt)+"/"+desired_chargeSt,hWPred);
       if(calLayer==0){
         TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hDif);
         TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hDifP);
+        TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hComp);
+        TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hPath);
+        TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hCompPred);
+        TDirectory.export("plots/clusterfinder"+String.valueOf(desired_sector)+".twig","/ai/validation/FTOF/"+desired_chargeSt,hPathPred);
       }
 
       System.out.println("\n\nValidator Statistics:");

@@ -71,6 +71,8 @@ public class ClusterFinderWorkerFTOF extends DataWorker {
       clusters.putFloat(5,row,(energycs[0]+energycs[1])/2);
       clusters.putFloat(6,row,(timecs[0]+timecs[1])/2);
 
+      //System.out.printf("pred comp %f path %f \n",pred_cf[9],pred_cf[10]);
+
     }
 
     @Override

@@ -46,6 +46,8 @@
                 <!-- <mainClass>j4np.instarec.validation.SectorTrackingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator_instaskim</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.TwoPionValidator_instaskim</mainClass> -->
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>
