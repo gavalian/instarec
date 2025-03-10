@@ -48,11 +48,12 @@ public class RunAppElPIDTraining {
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-        String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_1_wAIBanks.h5";
+        // String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_1_wAIBanks.h5";
         //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        String file = "/w/work/clas12/tyson/data_repo/caos/rga/run_train_5407.h5";
         HipoReader r = new HipoReader(file);
 
-        String pathToClusterFinder = "etc/networks/clusterfinder/cf";
+        String pathToClusterFinder = "etc/networks_rga/clusterfinder/cf";
         
         HipoWriter w = HipoWriter.create("w.h5", r);
         
@@ -85,7 +86,7 @@ public class RunAppElPIDTraining {
 
         System.out.println("\n\n\nTraining v1");
         String dataPath = "training_data/ElPIDTrain";
-        String networkPath = "etc/networks/ElPID/ElPID";
+        String networkPath = "etc/networks_rga/ElPID/ElPID";
         TrainingElPID.trainNetwork(dataPath, networkPath);
         TrainingElPID.testNetwork(dataPath, networkPath, 0,desiredThreshold);
         for (int j = 1; j < 7; j++) {

@@ -46,8 +46,9 @@ public class RunAppValidation {
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-         String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
+        //  String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
         //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        String file = "/w/work/clas12/tyson/data_repo/caos/rga/run_test_5407.h5";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -56,8 +57,8 @@ public class RunAppValidation {
         
         stream.setSource(r).setSync(w);
 
-        String pathToClusterFinder = "etc/networks/clusterfinder/cf";
-        String pathToElPID = "etc/networks/ElPID/ElPID";
+        String pathToClusterFinder = "etc/networks_rga/clusterfinder/cf";
+        String pathToElPID = "etc/networks_rga/ElPID/ElPID";
         double threshold=0.1;        
                 
         ConverterWorker   convert = new ConverterWorker();
@@ -117,7 +118,7 @@ public class RunAppValidation {
         phibins[2]=(float)180;
 
         ElPIDValidator validpid = new ElPIDValidator();
-        validpid.process("w.h5",150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
+        validpid.process("w.h5",150000,0.05,respbins,pbins,thetabins,phibins,(float)0.99,false,"");
         
     }
 }

@@ -48,8 +48,9 @@ public class RunAppCFTraining {
     public static void main(String[] args){
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
-        String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_1_wAIBanks.h5";
+        // String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_1_wAIBanks.h5";
         //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
+        String file = "/w/work/clas12/tyson/data_repo/caos/rga/run_train_5407.h5";
         HipoReader r = new HipoReader(file);
         
         HipoWriter w = HipoWriter.create("w.h5", r);
@@ -68,7 +69,7 @@ public class RunAppCFTraining {
         
         List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder,convertParticleCFTraining);
         
-        List<DataActor>   actors = RunAppCFTraining.createActors(1, 128, workers);
+        List<DataActor>   actors = RunAppCFTraining.createActors(3, 128, workers);
         
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
         
@@ -84,7 +85,7 @@ public class RunAppCFTraining {
         for(int i=0;i<2;i++){
           System.out.println("\n\n\nTraining for "+charge[i]);
           String dataPath="training_data/cfTrain_"+charge[i];
-          String networkPath="etc/networks/clusterfinder/cf_"+charge[i];
+          String networkPath="etc/networks_rga/clusterfinder/cf_"+charge[i];
           TrainingClusterFinder.trainNetwork(dataPath,networkPath);
           TrainingClusterFinder.testNetwork(dataPath,networkPath,0,charge[i]);
           for(int j=1;j<7;j++){

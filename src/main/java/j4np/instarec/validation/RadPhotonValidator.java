@@ -262,7 +262,7 @@ public class RadPhotonValidator {
                 hEP.fill(electron[1],elEs[0]);
         
                 //make sure part is good electron candidate
-                if(elEs[0]>0.06 && elEs[3]>0.15 && totHTCC!=0 && passFid(elLs)){// elEs[5] > (0.15 - elEs[4]) 
+                if(elEs[0]>0.06  && totHTCC!=0 && !passFid(elLs)&& elEs[3]>0.15){// elEs[5] > (0.15 - elEs[4]) && elEs[3]>0.15
 
                   hThetaPhi.fill(dTheta, dPhi);
                   
@@ -275,7 +275,7 @@ public class RadPhotonValidator {
                   hDistdTheta.fill(dTheta,dist);
                 
                   //region with less bg from non rad photons
-                  if(dist>30 && dPhi>-30 && dPhi<30){
+                  if( dPhi>-30 && dPhi<30){ //dist>15 &&
                     //don't count if set limTotNegEvs=-1
                     if(limTotNegEvs!=-1){
                       count++;
@@ -347,10 +347,10 @@ public class RadPhotonValidator {
       p.addRequired("-in", "input name");
       p.parse(args);
 
-      String endName="_antiFid"; // used to change output path of plots (eg adding _NoFiducialCuts)
+      String endName="_antiFid_wSFs0p15"; // used to change output path of plots (eg adding _NoFiducialCuts)
         
       RadPhotonValidator dp = new RadPhotonValidator();
-      dp.process(p.getOption("-in").stringValue(),-1,0.075,endName);
+      dp.process(p.getOption("-in").stringValue(),-1,0.05,endName);
   
       
       

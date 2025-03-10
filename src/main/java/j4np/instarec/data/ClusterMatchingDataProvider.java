@@ -102,8 +102,18 @@ public class ClusterMatchingDataProvider {
 
       return list;
     }
+
+    public Boolean allAboveThreshold(int[] numbers, int threshold) {
+    for (int num : numbers) {
+        if (num <= threshold) {
+            return false; // If any number is ≤ threshold, return false
+        }
+    }
+    return true; // All numbers are above the threshold
+}
     
-    public void process(String file, String output, int limTotNegEvs){
+    public void process(String file, String output, int limTot){
+    
 
       //used to convert ls to strips
       DataList LtoSconv = readCSV("LtoStrip_convTable.csv",69);
@@ -127,10 +137,13 @@ public class ClusterMatchingDataProvider {
       Event ev = new Event();
   
       Leaf part = new Leaf(32200, 99, "i", 1200);
+
+      Boolean allFull=false;
       
-      while(r.hasNext() && count[0]<limTotNegEvs){
+      while(r.hasNext() && !allFull){
         r.nextEvent(ev);
         ev.read(part,32200, 99);
+
         for(int row=0;row<part.getRows();row++){
           //only take particles that hit FTOF and all layers of ECAL
           if(isInAllLayers(part,row)){
@@ -171,28 +184,35 @@ public class ClusterMatchingDataProvider {
             }
 
             //append string per event for all sectors
-            try{
-              count[0+countOffset]++;
-              FileWriter writer = new FileWriter(output+chargeString+".csv",true);
-              PrintWriter pw = new PrintWriter(writer);
-              pw.println(csvLineBuilder.toString());
-              pw.close();
-            } catch (IOException e){
-              e.printStackTrace();
-            }
+            if(count[0+countOffset]<limTot){
+              try{
+                count[0+countOffset]++;
+                FileWriter writer = new FileWriter(output+chargeString+".csv",true);
+                PrintWriter pw = new PrintWriter(writer);
+                pw.println(csvLineBuilder.toString());
+                pw.close();
+              } catch (IOException e){
+                e.printStackTrace();
+              }
+            } 
 
-            try{
-              count[part.getShort(3,row)+countOffset]++;
-              FileWriter writer = new FileWriter(output+chargeString+"_sector"+String.valueOf(part.getShort(3,row))+".csv",true);
-              PrintWriter pw = new PrintWriter(writer);
-              pw.println(csvLineBuilder.toString());
-              pw.close();
-            } catch (IOException e){
-              e.printStackTrace();
-            }
+            if(count[part.getShort(3,row)+countOffset]<limTot){
+              try{
+                count[part.getShort(3,row)+countOffset]++;
+                FileWriter writer = new FileWriter(output+chargeString+"_sector"+String.valueOf(part.getShort(3,row))+".csv",true);
+                PrintWriter pw = new PrintWriter(writer);
+                pw.println(csvLineBuilder.toString());
+                pw.close();
+              } catch (IOException e){
+                e.printStackTrace();
+              }
+            } 
     
           }
         }
+
+        allFull=allAboveThreshold(count,limTot);
+
       }
 
       System.out.println("\nRead file "+file);

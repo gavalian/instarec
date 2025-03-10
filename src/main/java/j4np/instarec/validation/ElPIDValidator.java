@@ -446,7 +446,7 @@ public class ElPIDValidator {
       phibins[2]=(float)180;
         
       ElPIDValidator dp = new ElPIDValidator();
-      dp.process(p.getOption("-in").stringValue(),150000,0.075,respbins,pbins,thetabins,phibins,(float)0.99,true,endName);
+      dp.process(p.getOption("-in").stringValue(),150000,0.05,respbins,pbins,thetabins,phibins,(float)0.99,true,endName);
   
       
       
