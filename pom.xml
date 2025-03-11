@@ -12,6 +12,11 @@
         <artifactId>j4np-instarec</artifactId>
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>j4np</groupId>
+        <artifactId>j4np-clas12io</artifactId>
+        <version>${revision}</version>
+      </dependency>
     </dependencies>
 
     <build>
