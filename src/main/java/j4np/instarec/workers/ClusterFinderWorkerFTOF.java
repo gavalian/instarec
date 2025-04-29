@@ -79,10 +79,10 @@ public class ClusterFinderWorkerFTOF extends DataWorker {
     public void execute(DataEvent event) {
         Leaf adc = new Leaf(42,12,"i",4096);
         ((Event) event).read(adc);
-        Leaf trackbank = new Leaf(32000,1,"i",4096);
+        Leaf trackbank = new Leaf(27,3,"i",4096);
         ((Event) event).read(trackbank);
         //track bank row, sector, layer,  component, path, av energy btw left/right, av time btw left/right
-        Leaf clusters = new Leaf(32200,3,"ssiffff",4096);
+        Leaf clusters = new Leaf(32,2,"ssiffff",4096);
 
         float[] track= new float[6];
         float[] predicted_clusterpos = new float[nPredictedOutput];

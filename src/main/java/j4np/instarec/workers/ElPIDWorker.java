@@ -161,18 +161,18 @@ public class ElPIDWorker extends DataWorker {
  
     @Override
     public void execute(DataEvent event) {
-        Leaf trackbank = new Leaf(32000,1,"i",4096);
+        Leaf trackbank = new Leaf(27,3,"i",4096);
         ((Event) event).read(trackbank);
-        Leaf ECALclusters = new Leaf(32200,2,"i",4096);
+        Leaf ECALclusters = new Leaf(32,1,"i",4096);
         ((Event) event).read(ECALclusters);
         Leaf adc = new Leaf(42,12,"i",4096); //read htcc adc from here
         ((Event) event).read(adc);
-        Leaf FTOFclusters = new Leaf(32200,3,"i",4096);
+        Leaf FTOFclusters = new Leaf(32,2,"i",4096);
         ((Event) event).read(FTOFclusters);
         //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
         //6xwires, 9xec clusters, ftof (layer 2) path/time/component
         //HTCC sum ADC (same sector, before, after)
-        Leaf partout = new Leaf(32200,1,"sifssf3f3f6f9f3ffff",4096);
+        Leaf partout = new Leaf(32,3,"sifssf3f3f6f9f3ffff",4096);
 
         partout.setRows(trackbank.getRows()); 
         float[] nInVars=new float[51];

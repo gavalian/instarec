@@ -230,11 +230,11 @@ public class ConverterWorkerParticleCFTraining extends DataWorker {
         ((Event) event).read(bcal);
         ((Event) event).read(bftof);
         ((Event) event).read(bhtcc);
-        Leaf track = new Leaf(32000,1,"i",4096);
+        Leaf track = new Leaf(27,3,"i",4096);
         ((Event) event).read(track);
         //pindex, pid, pid prob, sector, charge, beta, pxpypz, vxvyvz
         //6xwires, 9xec clusters, ftof (layer 2) path/time/component, HTCC nphe (same sector, before, after)
-        Leaf partout = new Leaf(32200,99,"sifssf3f3f6f9f3ffff",4096);
+        Leaf partout = new Leaf(32,99,"sifssf3f3f6f9f3ffff",4096);
 
         /*bpart.show();
         bcal.show();

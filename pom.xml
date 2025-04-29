@@ -44,10 +44,11 @@
                 <!-- <mainClass>j4np.instarec.validation.RadPhotonValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.TrackingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.SectorTrackingValidator</mainClass> -->
-                <mainClass>j4np.instarec.validation.ElasticScatteringValidator</mainClass>
+                <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator_instaskim</mainClass> -->
-                <!-- <mainClass>j4np.instarec.validation.TwoPionValidator_instaskim</mainClass> -->
+                <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass>
+                <!-- <mainClass>j4np.instarec.validation.TwoPionValidator_old</mainClass> -->
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>
