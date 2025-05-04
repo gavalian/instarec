@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import j4np.clas12.decoder.Clas12DecoderService;
-import j4np.clas12.decoder.Clas12FitterService;
-import j4np.clas12.decoder.Clas12TranslateService;
+//import j4np.clas12.decoder.Clas12DecoderService;
+//import j4np.clas12.decoder.Clas12FitterService;
+//import j4np.clas12.decoder.Clas12TranslateService;
 import j4np.instarec.core.Hipo2Hipo4Worker;
 /**
  *
@@ -77,15 +77,15 @@ public class RunApp {
                 
         ConverterWorker   convert = new ConverterWorker();
         
-        Clas12DecoderService decoder = new Clas12DecoderService();
-        Clas12FitterService   fitter = new Clas12FitterService();
-        Clas12TranslateService trans = new Clas12TranslateService();
-        decoder.keepEvio = true;
-        
-        trans.setKeepEvio(true);
+        //Clas12DecoderService decoder = new Clas12DecoderService();
+        //Clas12FitterService   fitter = new Clas12FitterService();
+        //Clas12TranslateService trans = new Clas12TranslateService();
+        //decoder.keepEvio = true;
+        //trans.setKeepEvio(true);
+
         DriftChamberWorker  dcwrk = new DriftChamberWorker();
         TrackFinderWorker  finder = new TrackFinderWorker();
-        finder.finder.DO_5_SUPERLAYER = false;
+        //finder.finder.DO_5_SUPERLAYER = false;
         
         ClusterFinderWorkerECAL  ecalfinder = new ClusterFinderWorkerECAL(pathToClusterFinder);
         ClusterFinderWorkerFTOF  ftoffinder = new ClusterFinderWorkerFTOF(pathToClusterFinder);
@@ -94,8 +94,9 @@ public class RunApp {
         finder.initNetworks();
         Hipo2Hipo4Worker     h2h4 = new Hipo2Hipo4Worker(64*1024);
         //List<DataWorker>  workers = Arrays.asList(decoder,fitter,trans,dcwrk, finder,ecalfinder,ftoffinder,elPID,h2h4);
-        List<DataWorker>  workers = Arrays.asList(decoder,fitter,trans,dcwrk, finder,ecalfinder,ftoffinder,elPID,h2h4);
+        //List<DataWorker>  workers = Arrays.asList(decoder,fitter,trans,dcwrk, finder,ecalfinder,ftoffinder,elPID,h2h4);
         //List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder);
+        List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder, ecalfinder, ftoffinder, elPID);
         
         List<DataActor>   actors = RunApp.createActors(nt, 128, workers);
         actors.get(0).setBenchmark(1);

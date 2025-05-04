@@ -12,11 +12,11 @@
         <artifactId>j4np-instarec</artifactId>
         <version>${revision}</version>
       </dependency>
-      <dependency>
+      <!-- <dependency>
         <groupId>j4np</groupId>
         <artifactId>j4np-clas12io</artifactId>
         <version>${revision}</version>
-      </dependency>
+      </dependency> -->
     </dependencies>
 
     <build>
@@ -52,8 +52,8 @@
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator_instaskim</mainClass> -->
-                <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass>
-                <!-- <mainClass>j4np.instarec.validation.TwoPionValidator_old</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass> -->
+                <mainClass>j4np.instarec.validation.OnePionValidator</mainClass>
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>
