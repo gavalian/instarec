@@ -270,11 +270,45 @@ public class OnePionValidator {
       part[12]=nSL;
     }
 
-    public Boolean passFid(double[] Ls){
+    public Boolean passFid(double[] Ls, double part[],int str){
+      //is track chi^2 && part11]<350 && Math.abs(part13])<20 && part12]==6 && oneOfEcalHTCC==1
+      //RGA vz && part[13]<20 && part[13]>(-13)
+      //tight: >14cm ortherwise 9cm
+
+      boolean vz=false,looseCal=false,tightCal=false;
+
+      //for str 0:
+      if(part[13]<20 && part[13]>(-13)){
+        vz=true;
+      }
+
       if(Ls[0]>9 && Ls[1]>9 && Ls[2]>9){
+        looseCal=true;
+        if(Ls[0]>14 && Ls[1]>14 && Ls[2]>14){
+          tightCal=true;
+        }
+      }
+
+      if(str==0){
+        if(vz){
+          return true;
+        } else{
+          return false;
+        }
+      } else if (str==1){
+        if(vz && looseCal){
+          return true;
+        } else{
+          return false;
+        }
+      }  else if (str==2){
+        if(vz && tightCal){
+          return true;
+        } else{
+          return false;
+        }
+      } else {
         return true;
-      } else{
-        return false;
       }
     }
 
@@ -290,7 +324,7 @@ public class OnePionValidator {
     }
 
 
-    public void process(String file, int limEvs,String endName, double threshold,double beamE, Boolean reqFids, int desired_sector){
+    public void process(String file, int limEvs,String endName, double threshold,double beamE, int reqFids, int desired_sector){
       
       double lim_p_res=0.2; //percentage
 
@@ -615,10 +649,7 @@ public class OnePionValidator {
                 desired_sector_e=sector;
               }
 
-              Boolean fid=passFid(elLs);
-              if(!reqFids){
-                fid=true;
-              }
+              Boolean fid=passFid(elLs,el,reqFids);
 
               int hasEl=0, hasRECEl=0, hasElCandi=0,hasPip=0;
               int elNCal=0, hasPCAL=0,hasECIN=0,hasECOUT=0,hasHTCC=0,oneOfEcalHTCC=0,ecalHTCC=0;
@@ -634,7 +665,7 @@ public class OnePionValidator {
                 hasPip=1;
               }
 
-              //&& matchel!=-1 el[11] is track chi^2 && el[11]<350 && Math.abs(el[13])<20 && el[12]==6 && oneOfEcalHTCC==1
+              //&& matchel!=-1 el[11] 
               if(el[5]==-1 && desired_sector_e==sector && fid && matchel!=-1 && ecalHTCC==1){ 
                 hasElCandi=1;
               }
@@ -713,9 +744,9 @@ public class OnePionValidator {
         if(name.contains("with & without")){instapidelfilestring="_all";}
 
         if(desired_sector==0){
-          TDirectory.export("plots/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         } else {
-          TDirectory.export("plots/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         }
       }
 
@@ -728,9 +759,9 @@ public class OnePionValidator {
         if(name.contains("with & without")){instapidelfilestring="_all";}
 
         if(desired_sector==0){
-          TDirectory.export("plots/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         } else {
-          TDirectory.export("plots/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         }
       }
       
@@ -751,15 +782,16 @@ public class OnePionValidator {
       // String fName="/work/clas12/jnp/instarec/irec_005197.evio.00011.h5";
       String fName="w.h5";
 
-      String endName="_elPsup2_th0p025_matchTrack_ecalHTCC_vEll20";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
+      String endName="_elPsup2_th0p025_matchTrack_ecalHTCC_vzElRGACuts";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
 
       double resp_threshold=0.025; //0.075
       double beamE=10.6;
         
       OnePionValidator dp = new OnePionValidator();
 
-      dp.process(fName,-1,endName,resp_threshold,beamE,false,0);
-      dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,true,0);
+      //dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      //dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
+      //dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
 
 
       //Fill by hand unfortunately after twig fits
@@ -777,6 +809,22 @@ public class OnePionValidator {
       c.view().region().draw(b2);//.showLegend(0.05, 0.95);
       c.view().region().showLegend(0.05, 0.95);
       c.repaint();*/
+
+      //Fill by hand unfortunately after twig fits
+      //BarChartBuilder b = new BarChartBuilder();
+      //b.addEntry("L1 Trigger & Online e^- (97% / 94% / 68%)",88.74,118.68,147.025);
+      //b.addEntry("L1 Trigger & Offline e^- (96% / 91% / 61%)",86.785,114.702,132.448);
+      //b.addEntry("L1 Trigger ",90.324,126.42,216.897);
+      //b.setTitleY("Counts");
+      //b.setColors(new int[]{2,5,1});
+      //b.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts"});
+      //DataGroup b2 = b.build();
+      //TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation_barchart",b2);
+      //TGCanvas c = new TGCanvas(1000,1000);
+      ////for(DataSet ds : group.getData()) c.draw(ds, "same");
+      //c.view().region().draw(b2);//.showLegend(0.05, 0.95);
+      //c.view().region().showLegend(0.05, 0.95);
+      //c.repaint();
       
         
     }

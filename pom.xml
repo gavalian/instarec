@@ -53,7 +53,8 @@
                 <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator_instaskim</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass> -->
-                <mainClass>j4np.instarec.validation.OnePionValidator</mainClass>
+                <!-- <mainClass>j4np.instarec.validation.OnePionValidator</mainClass> -->
+                <mainClass>j4np.instarec.validation.EventCounter</mainClass> 
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>
