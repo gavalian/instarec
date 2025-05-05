@@ -789,9 +789,9 @@ public class OnePionValidator {
         
       OnePionValidator dp = new OnePionValidator();
 
-      //dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
-      //dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
-      //dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
+      dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
+      dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
 
 
       //Fill by hand unfortunately after twig fits
