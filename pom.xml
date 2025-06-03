@@ -42,7 +42,9 @@
                 <!-- <mainClass>j4np.instarec.networks.TrainingClusterFinder</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppElPIDTraining</mainClass>  -->
                 <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
+                <!-- <mainClass>j4np.instarec.data.RadPhotonDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
+                <mainClass>j4np.instarec.networks.TrainingElPIDRadPhotons</mainClass>
                 <!-- <mainClass>j4np.instarec.workers.RunAppValidation</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElPIDValidator</mainClass> -->
@@ -55,7 +57,7 @@
                 <!-- <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.OnePionValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.EventCounter</mainClass>  -->
-                <mainClass>j4np.instarec.validation.DenoisingValidator</mainClass> 
+                <!-- <mainClass>j4np.instarec.validation.DenoisingValidator</mainClass>  -->
               </manifest>
             </archive> <!-- until here -->
             <descriptorRefs>

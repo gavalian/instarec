@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package j4np.instarec.validation;
+package j4np.instarec.data;
 
 import j4np.hipo5.data.Leaf;
 import j4np.hipo5.data.Event;
@@ -17,7 +17,12 @@ import twig.data.TDirectory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 //for priting
 import j4np.hipo5.data.Bank;
@@ -26,9 +31,9 @@ import j4np.hipo5.data.Bank;
  *
  * @author tyson
  */
-public class RadPhotonValidator {
+public class RadPhotonDataProvider {
     
-    public RadPhotonValidator(){
+    public RadPhotonDataProvider(){
     }
 
     public void getPart(Bank RECPart, int pindex, double[] part){
@@ -144,7 +149,14 @@ public class RadPhotonValidator {
       return nSect;
     }
     
-    public void process(String file, int limTotNegEvs,double threshold, String endName){
+    public int process(String file, int limTotNegEvs,double threshold, String endName,String output){
+
+      //remove existing output files so we can overwrite output
+      delete_existing_output(output+".csv");
+      //if did this per sector
+      //for(int i=1;i<14;i++){
+      //  if(i<7){delete_existing_output(output+"_sector"+String.valueOf(i)+".csv");}
+      //}
 
       //output training sample size per sector
       int count = 0, countRad=0, countGoodInsta=0, countBadInsta=0;
@@ -152,59 +164,13 @@ public class RadPhotonValidator {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(32200, 99, "i", 1200);
-      Leaf pred_part = new Leaf(32200, 1, "i", 1200);
+      Leaf part = new Leaf(32, 99, "i", 1200);
+      Leaf pred_part = new Leaf(32, 3, "i", 1200);
+      Leaf pred_ECAL = new Leaf(32, 1, "i", 1200);
+      Leaf pred_HTCC = new Leaf(32, 98, "i", 1200);
 
       Bank recpart = r.getBank("REC::Particle");
       Bank reccal = r.getBank("REC::Calorimeter");
-
-      H2F hThetaPhi = new H2F("dPhi vs dTheta",50,-1.0,1.0,50,-15,5);
-      hThetaPhi.attr().setTitleX("dTheta [Degrees]");
-      hThetaPhi.attr().setTitleY("dPhi [Degrees]");
-
-      H2F hSfP = new H2F("Sampling Fraction vs P",70,1,8,50,0,0.5);
-      hSfP.attr().setTitleX("P [GeV]");
-      hSfP.attr().setTitleY("Sampling Fraction");
-
-      H2F hEP = new H2F("PCAL Energy vs P",70,1,8,50,0,0.15);
-      hEP.attr().setTitleX("P [GeV]");
-      hEP.attr().setTitleY("PCAL Energy Deposition [GeV]");
-
-      H2F hDistdTheta = new H2F("Distance between Photon and Electron vs dTheta",50,-1.0,1.0,50,0,100);
-      hDistdTheta.attr().setTitleX("dTheta [Degrees]");
-      hDistdTheta.attr().setTitleY("Distance [cm]");
-
-      H1F hDist = new H1F("Distance between Photon and Electron",50,0,100);
-      hDist.attr().setTitleX("Distance [cm]");
-      hDist.attr().setLineColor(2);
-      hDist.attr().setFillColor(2);
-      hDist.attr().setLineWidth(3);
-
-      H1F hTheta = new H1F("All",100,-2.5,2.5);
-      hTheta.attr().setTitleX("dTheta [Degrees]");
-      hTheta.attr().setLineColor(2);
-      hTheta.attr().setFillColor(2);
-      hTheta.attr().setLineWidth(3);
-      
-      H1F hTheta2 = new H1F("With Online e-",100,-2.5,2.5);
-      hTheta2.attr().setTitleX("dTheta [Degrees]");
-      hTheta2.attr().setLineColor(5);
-      hTheta2.attr().setLineWidth(3);
-
-      H1F hP_Insta = new H1F("Offline ! e- PID & Online e- PID",50,0.,10);
-      hP_Insta.attr().setLineColor(2);
-      hP_Insta.attr().setFillColor(2);
-      hP_Insta.attr().setLineWidth(3);
-      hP_Insta.attr().setTitleX("Momentum [GeV]");
-      H1F hP_InstaBad = new H1F("Offline ! e- PID & Online ! e- PID",50,0.,10);
-      hP_InstaBad.attr().setLineColor(3);
-      hP_InstaBad.attr().setLineWidth(3);
-      hP_InstaBad.attr().setTitleX("Momentum [GeV]");
-      H1F hP_REC = new H1F("Offline ! e- PID",50,0.,10);
-      hP_REC.attr().setLineColor(5);
-      hP_REC.attr().setLineWidth(3);
-      hP_REC.attr().setTitleX("Momentum [GeV]");
-
 
 
       double[] electron = new double[4];
@@ -222,6 +188,8 @@ public class RadPhotonValidator {
         r.nextEvent(ev);
         ev.read(part,32,99);
         ev.read(pred_part,32,3);
+        ev.read(pred_HTCC,32,98);
+        ev.read(pred_ECAL,32,1);
         ev.read(recpart);
         ev.read(reccal);
         
@@ -234,6 +202,69 @@ public class RadPhotonValidator {
           float resp=(float)pred_part.getDouble(2,row);
 
           double totHTCC=pred_part.getDouble(30,row)+pred_part.getDouble(31,row)+pred_part.getDouble(32,row);
+
+          StringBuilder csvLineBuilder = new StringBuilder(); 
+
+          float[] pred_strips = new float[9];
+          float[] energy= new float[3];
+          float sumE=0;
+          for(int j=0;j<3;j++){energy[j]=0;}
+          float[] DUs = new float[9];
+          for(int j=0;j<pred_ECAL.getRows();j++){
+            //match cluster to track
+            if(pred_ECAL.getShort(0,j)==row){
+              if(pred_ECAL.getInt(2,j)!=0){
+                pred_strips[pred_ECAL.getInt(2,j)-1]=(float)pred_ECAL.getDouble(3,j);
+                DUs[pred_ECAL.getInt(2,j)-1]=pred_ECAL.getInt(5,j);
+                sumE+=pred_ECAL.getDouble(4,j);
+                //sum energy in PCAL, ECIN, ECOUT
+                if(pred_ECAL.getInt(2,j)<4){
+                  energy[0]+=pred_ECAL.getDouble(4,j);
+                } else if(pred_ECAL.getInt(2,j)>=4 && pred_ECAL.getInt(2,j)<7){
+                  energy[1]+=pred_ECAL.getDouble(4,j);
+                } else if(pred_ECAL.getInt(2,j)>=7){
+                  energy[2]+=pred_ECAL.getDouble(4,j);
+                }
+              }
+            }
+          }
+
+          csvLineBuilder.append(String.format("%.6f,%.6f,%.6f,",energy[0],energy[1],energy[2]));
+
+          for(int j=0;j<9;j++){
+            csvLineBuilder.append(String.format("%.6f,",pred_strips[j]));
+          }
+          for(int j=0;j<9;j++){
+            csvLineBuilder.append(String.format("%.6f,",DUs[j]));
+          }
+
+          //add wires
+          for (int j=12;j<18;j++){ 
+            csvLineBuilder.append(String.format("%.6f,",part.getDouble(j,row)));
+          }
+          //add HTCC, has one row per sector
+          float sumHTCC=0;
+          for(int j=0;j<8;j++){
+            csvLineBuilder.append(String.format("%.6f,",pred_HTCC.getDouble(j+1,sector-1)));
+            sumHTCC+=pred_HTCC.getDouble(j+1,sector-1);
+          }
+
+          int sectorBefore=sector-1;
+          int sectorAfter=sector+1;
+          if(sector==1){sectorBefore=6;}
+          else if(sector==6){sectorAfter=1;}
+
+          for(int j=0;j<8;j++){
+            csvLineBuilder.append(String.format("%.6f,",pred_HTCC.getDouble(j+1,sectorBefore-1)));
+            sumHTCC+=pred_HTCC.getDouble(j+1,sectorBefore-1);
+          }
+
+          for(int j=0;j<8;j++){
+            csvLineBuilder.append(String.format("%.6f,",pred_HTCC.getDouble(j+1,sectorAfter-1)));
+            sumHTCC+=pred_HTCC.getDouble(j+1,sectorAfter-1);
+          }
+
+          csvLineBuilder.append("0,1");
 
           //require neg parts in FD matched to rec track
           //apply fiducial cuts 
@@ -257,45 +288,39 @@ public class RadPhotonValidator {
                 
                 getCalInfo(reccal, pindex, electron[1], elEs, elLs);
                 getCalInfo(reccal, rowphoton, photon[1], phEs, phLs);
-  
-                hSfP.fill(electron[1],elEs[3]);
-                hEP.fill(electron[1],elEs[0]);
         
                 //make sure part is good electron candidate
                 //fids && passFid(elLs)
                 if(elEs[3]>0.01  && totHTCC!=0 && Math.abs(dTheta)<2.5){// elEs[0]>0.06 elEs[5] > (0.15 - elEs[4]) && elEs[3]>0.15
 
-                  hThetaPhi.fill(dTheta, dPhi);
                   
                   double difLU=elLs[0]-phLs[0];
                   double difLV=elLs[1]-phLs[1];
                   double difLW=elLs[2]-phLs[2];
                   double dist=Math.sqrt(difLU*difLU+difLV*difLV+difLW*difLW);
 
-                  hDist.fill(dist);
-                  hDistdTheta.fill(dTheta,dist);
                 
                   //region with less bg from non rad photons
                   if( dPhi>-30 && dPhi<30){ //dist>15 &&
-                    //don't count if set limTotNegEvs=-1
-                    if(limTotNegEvs!=-1){
-                      count++;
-                    }
-                    hTheta.fill(dTheta);
-
-                    if(resp>threshold){
-                      hTheta2.fill(dTheta);
-                      
-                    }
+                    
                     if(Math.abs(dTheta)<0.5 ){
-                      countRad++;
-                      hP_REC.fill(electron[1]);
+                      try{
+                        FileWriter writer = new FileWriter(output+".csv",true);
+                        PrintWriter pw = new PrintWriter(writer);
+                        pw.println(csvLineBuilder.toString());
+                        pw.close();
+                        countRad++;
+                        //don't count if set limTotNegEvs=-1
+                        if(limTotNegEvs!=-1){
+                          count++;
+                        }
+                      } catch (IOException e){
+                        e.printStackTrace();
+                      }
                       if(resp>threshold){
                         countGoodInsta++;
-                        hP_Insta.fill(electron[1]);
                       } else {
                         countBadInsta++;
-                        hP_InstaBad.fill(electron[1]);
                       }
 
                     }  
@@ -308,21 +333,12 @@ public class RadPhotonValidator {
         }
       }
 
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ThetaDif", hThetaPhi);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ThetaDif", hTheta);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ThetaDif", hTheta2);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ValidVars", hDist);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ValidVars", hDistdTheta); 
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ValidVars", hSfP);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/ValidVars", hEP);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/elP", hP_REC);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/elP", hP_Insta);
-      TDirectory.export("plots_rga/RadPhoton0" + endName + ".twig", "/ai/validation/elP", hP_InstaBad);
-
       float eff=(float)countGoodInsta/countRad;
 
       System.out.printf("\n\nNumber of missIDed electrons with radiated photon %d , recovered %d, not recovered %d\n",countRad,countGoodInsta,countBadInsta);
       System.out.printf("Recovery Efficiency %f\n",eff);
+
+      return countRad;
 
     }
     
@@ -338,7 +354,28 @@ public class RadPhotonValidator {
       }
     }
 
-    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in w.h5 
+    public void copyOverNegatives(int numLines, String inputPath, String outputPath) {
+        try (
+            BufferedReader reader = new BufferedReader(new FileReader(inputPath+".csv"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath+".csv", true)) // append = true
+        ) {
+            String line;
+            int count = 0;
+
+            while ((line = reader.readLine()) != null && count < numLines) {
+                if (line.trim().endsWith("1,0")) {
+                    writer.write(line);
+                    writer.newLine();
+                    count++;
+                }
+            }
+            System.out.println("Appended " + count + " negatives to: " + outputPath);
+        } catch (IOException e) {
+            System.err.println("Error processing files: " + e.getMessage());
+        }
+    }
+
+    //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in w.h5 -o training_data/ElPIDTrainRadPhotons -nr training_data/ElPIDTrain
     //read plots in j4shell with eg TwigStudio.browser("plots/RadPhoton0.twig");
     
     public static void main(String[] args){
@@ -346,12 +383,16 @@ public class RadPhotonValidator {
       System.out.println("\n\n----- starting radiated photon validator ");
       OptionParser p = new OptionParser();
       p.addRequired("-in", "input name");
+      p.addRequired("-o", "output file name");
+      p.addRequired("-nr", "usual (not rad) training file name");
       p.parse(args);
 
       String endName="_noFid"; // used to change output path of plots (eg adding _NoFiducialCuts)
         
-      RadPhotonValidator dp = new RadPhotonValidator();
-      dp.process(p.getOption("-in").stringValue(),-1,0.05,endName);
+      RadPhotonDataProvider dp = new RadPhotonDataProvider();
+      int nPositives=dp.process(p.getOption("-in").stringValue(),-1,0.05,endName,p.getOption("-o").stringValue());
+      dp.copyOverNegatives(nPositives,p.getOption("-nr").stringValue(),p.getOption("-o").stringValue());
+
   
       
       
