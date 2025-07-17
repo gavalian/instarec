@@ -80,6 +80,42 @@ public class TrainingElPIDRadPhotons {
     return list;
   }
 
+  public static void trainNetwork(String dataPath, String networkPath) {
+
+    FeedForwardNetwork network = DeepNettsTrainer.createClassifier(new int[] { 51, 35, 20, 10, 5, nPredictedOutput });
+    EntryTransformer trans = new EntryTransformer();
+
+    trans.input().add(3, 0, 150000); // calo ADCs
+    trans.input().add(9, 1, 500); // ECAL locs
+    trans.input().add(9, 0, 10); // ECALl DUs
+    trans.input().add(6, 1, 112); // wires
+    trans.input().add(24, 0, 35000); // HTCC ADCS
+    trans.output().add(2, 0, 1); // Electron or not
+
+    // DataList data = DataList.csv(dataPath + ".csv",
+    // DataList.range(0, 51), DataList.range(51, 51 + nPredictedOutput));
+    // //_outbending
+
+    DataList data = readCSV(dataPath + ".csv", 51, nPredictedOutput);
+
+    data.shuffle();
+    data.scan();
+    // data.show();
+
+    DeepNettsTrainer trainer = new DeepNettsTrainer(network);
+    trainer.updateLayers();
+    DataSet dset = trainer.convert(data, trans);
+    trainer.train(dset, 1000);
+    trainer.save(networkPath + ".json", trans);
+    //do something weird
+    //in case we don't transfer train per sector
+    //still save one per sector as other code expects it
+    //will get overwritten if do transfer train
+    for(int i=1;i<7;i++){
+      trainer.save(networkPath + "_sector" + String.valueOf(i) + ".json", trans);
+    }
+  }
+
   public static void testNetwork(String dataPath, String networkPath, int sector, double effLow) {
     String networkPath_ws = networkPath;
     String dataPath_ws = dataPath;
@@ -125,8 +161,8 @@ public class TrainingElPIDRadPhotons {
         hRespNeg.fill(predicted[1]);
       }
     }
-    TDirectory.export("plots/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Resp", hRespPos);
-    TDirectory.export("plots/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Resp", hRespNeg);
+    TDirectory.export("plots_rga/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Resp", hRespPos);
+    TDirectory.export("plots_rga/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Resp", hRespNeg);
     TrainingElPIDRadPhotons.findBestThreshold(data,model,1,effLow,sector);
 
   }
@@ -210,8 +246,8 @@ public class TrainingElPIDRadPhotons {
     System.out.format("%n Best Purity at Efficiency above %f: %.3f at a threshold on the response of %.3f %n%n",
         effLow, bestPuratEffLow, bestRespTh);
 
-    TDirectory.export("plots/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Purity", gPur);
-    TDirectory.export("plots/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Efficiency", gEff);
+    TDirectory.export("plots_rga/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Purity", gPur);
+    TDirectory.export("plots_rga/ElPIDRadPhotons" + String.valueOf(sector) + ".twig", "/ai/training/Efficiency", gEff);
 
     return bestRespTh;
   }
@@ -241,11 +277,11 @@ public class TrainingElPIDRadPhotons {
     // data.show();
 
     DataSet dset = trainer.convert(data, transformer);
-    trainer.train(dset, 1000);
+    trainer.train(dset, 250);
     trainer.save(networkPathOut_ws + ".json", transformer);
   }
 
-  // run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in training_data/ElPIDTrainRadPhotons -name etc/networks/ElPID/ElPID -nameOut etc/networks/ElPID/ElPIDRadPhotons
+  // run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar -in training_data/ElPIDTrainRadPhotons -name etc/networks_rga/ElPID/ElPID -nameOut etc/networks_rga/ElPID/ElPIDRadPhotons
   // read plots in j4shell with eg TwigStudio.browser("plots/ElPID0.twig");
 
   public static void main(String[] args) {
@@ -263,11 +299,16 @@ public class TrainingElPIDRadPhotons {
     String dataPath = p.getOption("-in").stringValue();
     String networkPath = p.getOption("-name").stringValue();
     String networkPathOut = p.getOption("-nameOut").stringValue();
-    for (int j = 1; j < 7; j++) {
+    //transfer training
+    /*for (int j = 1; j < 7; j++) {
       System.out.printf("\nTransfer training for sector %d\n", j);
       TrainingElPIDRadPhotons.transferTraining(dataPath, networkPath,networkPathOut, j);
       TrainingElPIDRadPhotons.testNetwork(dataPath, networkPathOut, j,desiredThreshold);
-    }
+    }*/
+
+    //train from scratch
+    TrainingElPIDRadPhotons.trainNetwork(dataPath,networkPathOut);
+    TrainingElPIDRadPhotons.testNetwork(dataPath, networkPathOut, 0,desiredThreshold);
 
   }
 }

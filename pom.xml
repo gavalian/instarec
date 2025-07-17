@@ -44,8 +44,10 @@
                 <!-- <mainClass>j4np.instarec.data.ElPIDDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.data.RadPhotonDataProvider</mainClass> -->
                 <!-- <mainClass>j4np.instarec.networks.TrainingElPID</mainClass> -->
-                <mainClass>j4np.instarec.networks.TrainingElPIDRadPhotons</mainClass>
+                <!-- <mainClass>j4np.instarec.networks.TrainingElPIDRadPhotons</mainClass> -->
                 <!-- <mainClass>j4np.instarec.workers.RunAppValidation</mainClass> -->
+                <!-- <mainClass>j4np.instarec.workers.RunAppRadPhotonsTraining</mainClass> -->
+                <!-- <mainClass>j4np.instarec.workers.RunAppRadPhotonsValidation</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ClusterMatchingValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElPIDValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.RadPhotonValidator</mainClass> -->
@@ -55,7 +57,9 @@
                 <!-- <mainClass>j4np.instarec.workers.RunAppElasticScatteringTagger</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.ElasticScatteringValidator_instaskim</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.TwoPionValidator</mainClass> -->
+                <!-- <mainClass>j4np.instarec.validation.TwoPionNoElectronValidator</mainClass> -->
                 <!-- <mainClass>j4np.instarec.validation.OnePionValidator</mainClass> -->
+                <mainClass>j4np.instarec.validation.SingleElectronValidator</mainClass>
                 <!-- <mainClass>j4np.instarec.validation.EventCounter</mainClass>  -->
                 <!-- <mainClass>j4np.instarec.validation.DenoisingValidator</mainClass>  -->
               </manifest>

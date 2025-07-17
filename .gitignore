@@ -1,5 +1,7 @@
 target
 plots/*
+plots_rga/*
 logs
 *.h5
 .vscode
+*old*

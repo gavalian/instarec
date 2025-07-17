@@ -33,9 +33,9 @@ import java.util.Vector;
  *
  * @author tyson
  */
-public class OnePionValidator {
+public class KLambdaValidator {
     
-    public OnePionValidator(){
+    public KLambdaValidator(){
     }
 
     public void fillHisto(Map<String, Integer> names,Vector<H1F> histos,String name,double value){
@@ -81,20 +81,21 @@ public class OnePionValidator {
       return a*a;
     }
 
-    public void calcExc(double[] pip, double[] el, double[] exc,double beamE){
+    public void calcExc(double[] p, double[] pim, double[] el, double[] exc,double beamE){
       
       double elE=Math.sqrt(square(el[1])+square(getM(11)));
-      double pipE=Math.sqrt(square(pip[1])+square(getM(211)));
+      double pE=Math.sqrt(square(p[1])+square(getM(2212)));
+      double pimE=Math.sqrt(square(pim[1])+square(getM(-211)));
       double pM=getM(2212);
 
-      double IM = Math.sqrt(square(pipE+elE)- ( square(pip[6]+el[6]) + square(pip[7]+el[7]) + square(pip[8]+el[8]) ));
-      double px_m = -1.0*(el[6]+pip[6]);
-      double py_m = -1.0*(el[7]+pip[7]);
-      double pz_m = beamE - (el[8]+pip[8]);
+      double IM = Math.sqrt(square(pE+pimE)- ( square(p[6]+pim[6]) + square(p[7]+pim[7]) + square(p[8]+pim[8]) ));
+      double px_m = -1.0*(el[6]+p[6]+pim[6]);
+      double py_m = -1.0*(el[7]+p[7]+pim[7]);
+      double pz_m = beamE - (el[8]+p[8]+pim[8]);
       double p_m=Math.sqrt(square(px_m) + square(py_m)+square(pz_m));
       double pxp_m = px_m/p_m;
       double pyp_m = py_m/p_m;
-      double E_m = beamE + getM(2212) - (elE+pipE);
+      double E_m = beamE + getM(2212) - (elE+pE+pimE);
       double MM2 = square(E_m) - (square(px_m) + square(py_m)+square(pz_m));
 
       exc[0]=IM;
@@ -333,7 +334,7 @@ public class OnePionValidator {
 
       HipoReader r = new HipoReader();
       Event ev = new Event();
-      r.setTags(211);
+      //r.setTags(2211); //2211 for two pion tagger
       r.open(file);
       
 
@@ -346,13 +347,17 @@ public class OnePionValidator {
       Leaf pred_part = new Leaf(32, 3, "i", 1200);
 
       int nVarsPart=14,nVarsExc=4;
-      double[] pip=new double[nVarsPart];
+      // pid, P, Theta, Phi
+      double[] pim=new double[nVarsPart];
+      double[] p=new double[nVarsPart];
       double[] el=new double[nVarsPart];
       double[] exc=new double[nVarsExc];
       double[] elEs=new double[9];
       double[] elLs=new double[9];
-      double[] pipEs=new double[9];
-      double[] pipLs=new double[9];
+      double[] pimEs=new double[9];
+      double[] pimLs=new double[9];
+      double[] pEs=new double[9];
+      double[] pLs=new double[9];
 
       double targMass=getM(2212);
 
@@ -363,7 +368,7 @@ public class OnePionValidator {
       Map<String, Integer> names2D = new HashMap<>();
 
       int nHistos=0,nHistos2D=0;
-      for(int i=0;i<3;i++){
+      for(int i=0;i<5;i++){
         String instapidelstring="";
         String instapidelfilestring="";
         if(i==1){
@@ -372,7 +377,14 @@ public class OnePionValidator {
         } else if(i==2){
           instapidelstring="with & without";
           instapidelfilestring="_all";
+        } else if(i==3){
+          instapidelstring="CorrectPimPID";
+          instapidelfilestring="_GoodPim";
+        } else if(i==4){
+          instapidelstring="WrongPimPID";
+          instapidelfilestring="_WrongPim";
         }
+        
         
         H1F hNCal = new H1F("Calo: Offline e- PID & "+instapidelstring+" Online e- PID", 6,-1.5,4.5);
         hNCal.attr().setLineColor(5);
@@ -433,15 +445,33 @@ public class OnePionValidator {
         H1F hMM = new H1F("Mx: Offline e- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM.attr().setLineColor(5);
         hMM.attr().setLineWidth(3);
-        hMM.attr().setTitleX("Mx(e'#pi^+) [GeV]");
+        hMM.attr().setTitleX("Mx(e'p#pi^-) [GeV]");
         names.put("hMM"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hMM);
 
+
+        H1F hMMwpim = new H1F("Mx: wrong pi- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
+        hMMwpim.attr().setLineColor(5);
+        hMMwpim.attr().setLineWidth(3);
+        hMMwpim.attr().setTitleX("Mx(e'p#pi^-) [GeV]");
+        names.put("hMMwpim"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hMMwpim);
+
+        H1F hMMgpim = new H1F("Mx: good pi- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
+        hMMgpim.attr().setLineColor(5);
+        hMMgpim.attr().setLineWidth(3);
+        hMMgpim.attr().setTitleX("Mx(e'p#pi^-) [GeV]");
+        names.put("hMMgpim"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hMMgpim);
+
+
         H1F hMM_w = new H1F("Mx: Offline ! e- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM_w.attr().setLineColor(1);
         hMM_w.attr().setLineWidth(3);
-        hMM_w.attr().setTitleX("Mx(e'#pi^+) [GeV]");
+        hMM_w.attr().setTitleX("Mx(e'p#pi^-) [GeV]");
         names.put("hMM_w"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hMM_w);
@@ -449,7 +479,7 @@ public class OnePionValidator {
         H1F hMM_allInstaEl = new H1F("Mx: "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM_allInstaEl.attr().setLineColor(2);
         hMM_allInstaEl.attr().setLineWidth(3);
-        hMM_allInstaEl.attr().setTitleX("Mx(e'#pi^+) [GeV]");
+        hMM_allInstaEl.attr().setTitleX("Mx(e'p#pi^-) [GeV]");
         names.put("hMM_allInstaEl"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hMM_allInstaEl);
@@ -457,7 +487,7 @@ public class OnePionValidator {
         H1F hIM = new H1F("M: Offline e- PID & "+instapidelstring+" Online e- PID", 100,0,3.5);
         hIM.attr().setLineColor(5);
         hIM.attr().setLineWidth(3);
-        hIM.attr().setTitleX("M(#pi^+e^-) [GeV]");
+        hIM.attr().setTitleX("M(p#pi^-) [GeV]");
         names.put("hIM"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hIM);
@@ -465,7 +495,7 @@ public class OnePionValidator {
         H1F hIM_w = new H1F("M: Offline ! e- PID & "+instapidelstring+" Online e- PID", 100,0,3.5);
         hIM_w.attr().setLineColor(1);
         hIM_w.attr().setLineWidth(3);
-        hIM_w.attr().setTitleX("M(#pi^+e^-) [GeV]");
+        hIM_w.attr().setTitleX("M(p#pi^-) [GeV]");
         names.put("hIM_w"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hIM_w);
@@ -473,10 +503,33 @@ public class OnePionValidator {
         H1F hIM_allInstaEl = new H1F("M: "+instapidelstring+" Online e- PID", 100,0,3.5);
         hIM_allInstaEl.attr().setLineColor(2);
         hIM_allInstaEl.attr().setLineWidth(3);
-        hIM_allInstaEl.attr().setTitleX("M(#pi^+e^-) [GeV]");
+        hIM_allInstaEl.attr().setTitleX("M(p#pi^-) [GeV]");
         names.put("hIM_allInstaEl"+instapidelstring,nHistos);
         nHistos++;
         histos.add(hIM_allInstaEl);
+
+        H1F hPDif = new H1F("e^- P - #pi^- P "+instapidelstring+" Online e- PID", 100,-5,5);
+        hPDif.attr().setLineColor(2);
+        hPDif.attr().setLineWidth(3);
+        hPDif.attr().setTitleX("e^- P - #pi^- P [GeV]");
+        names.put("hPDif"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hPDif);
+
+        H1F hPDif_all = new H1F("e^- P - #pi^- P "+instapidelstring+" Online e- PID (all phase space)", 100,-5,5);
+        hPDif_all.attr().setLineColor(2);
+        hPDif_all.attr().setLineWidth(3);
+        hPDif_all.attr().setTitleX("e^- P - #pi^- P [GeV]");
+        names.put("hPDif_all"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hPDif_all);
+
+        H2F hpimPelP = new H2F("e^- P vs #pi^- P "+instapidelstring+" Online e- PID",50,0,10,50,0,10);
+        hpimPelP.attr().setTitleX("#pi^- P [GeV]");
+        hpimPelP.attr().setTitleY("e^- P [GeV]");
+        names2D.put("hpimPelP"+instapidelstring,nHistos2D);
+        nHistos2D++;
+        histos2D.add(hpimPelP);
 
         H2F helPTheta = new H2F("e^- #theta P: Offline e- PID & "+instapidelstring+" Online e- PID",50,0,10,50,0,40);
         helPTheta.attr().setTitleX("P [GeV]");
@@ -492,12 +545,19 @@ public class OnePionValidator {
         nHistos2D++;
         histos2D.add(helPTheta_w);
 
-        H2F hpipPTheta_allInstaEl = new H2F("#pi^+ #theta P:  "+instapidelstring+" Online e- PID ",50,0,10,50,0,40);
-        hpipPTheta_allInstaEl.attr().setTitleX("P [GeV]");
-        hpipPTheta_allInstaEl.attr().setTitleY("#theta [Deg]");
-        names2D.put("hpipPTheta_allInstaEl"+instapidelstring,nHistos2D);
+        H2F hpimPTheta_allInstaEl = new H2F("#pi^- #theta P:  "+instapidelstring+" Online e- PID ",50,0,10,50,0,40);
+        hpimPTheta_allInstaEl.attr().setTitleX("P [GeV]");
+        hpimPTheta_allInstaEl.attr().setTitleY("#theta [Deg]");
+        names2D.put("hpimPTheta_allInstaEl"+instapidelstring,nHistos2D);
         nHistos2D++;
-        histos2D.add(hpipPTheta_allInstaEl);
+        histos2D.add(hpimPTheta_allInstaEl);
+
+        H2F hpPTheta_allInstaEl = new H2F("p #theta P:  "+instapidelstring+" Online e- PID ",50,0,10,50,0,40);
+        hpPTheta_allInstaEl.attr().setTitleX("P [GeV]");
+        hpPTheta_allInstaEl.attr().setTitleY("#theta [Deg]");
+        names2D.put("hpPTheta_allInstaEl"+instapidelstring,nHistos2D);
+        nHistos2D++;
+        histos2D.add(hpPTheta_allInstaEl);
 
 
         H2F helPTheta_allInstaEl = new H2F("e^- #theta P:  "+instapidelstring+" Online e- PID",50,0,10,50,0,40);
@@ -507,6 +567,26 @@ public class OnePionValidator {
         nHistos2D++;
         histos2D.add(helPTheta_allInstaEl);
 
+        H2F helPTheta_allInstaEl_all = new H2F("e^- #theta P:  "+instapidelstring+" Online e- PID (all phase space)",50,0,10,50,0,40);
+        helPTheta_allInstaEl_all.attr().setTitleX("P [GeV]");
+        helPTheta_allInstaEl_all.attr().setTitleY("#theta [Deg]");
+        names2D.put("helPTheta_allInstaEl_all"+instapidelstring,nHistos2D);
+        nHistos2D++;
+        histos2D.add(helPTheta_allInstaEl_all);
+
+        H2F hpimPTheta_allInstaEl_all = new H2F("#pi^- #theta P:  "+instapidelstring+" Online e- PID (all phase space)",50,0,10,50,0,40);
+        hpimPTheta_allInstaEl_all.attr().setTitleX("P [GeV]");
+        hpimPTheta_allInstaEl_all.attr().setTitleY("#theta [Deg]");
+        names2D.put("hpimPTheta_allInstaEl_all"+instapidelstring,nHistos2D);
+        nHistos2D++;
+        histos2D.add(hpimPTheta_allInstaEl_all);
+
+        H2F hpPTheta_allInstaEl_all = new H2F("p #theta P:  "+instapidelstring+" Online e- PID (all phase space)",50,0,10,50,0,40);
+        hpPTheta_allInstaEl_all.attr().setTitleX("P [GeV]");
+        hpPTheta_allInstaEl_all.attr().setTitleY("#theta [Deg]");
+        names2D.put("hpPTheta_allInstaEl_all"+instapidelstring,nHistos2D);
+        nHistos2D++;
+        histos2D.add(hpPTheta_allInstaEl_all);
 
         H2F helXY = new H2F("e^- Y vs X: Offline e- PID & "+instapidelstring+" Online e- PID",100,-250,250,100,-250,250);
         helXY.attr().setTitleX("X [cm]");
@@ -616,121 +696,188 @@ public class OnePionValidator {
         int hasTrig=hasTriggerEl(triggerbank);
         
 
-        //System.out.println("\n\nNew Event");
+        //System.out.printf("\n\nNew Event, %d \n",pred_part.getSize());
         //pred_part.print();
+        //recpart.show();
         //reccal.show();
 
         if(pred_part.getSize()>0){
 
           for(int row=0;row<recpart.getRows();row++){
-            for(int row3=0;row3<recpart.getRows();row3++){
+            for(int row2=(row+1);row2<recpart.getRows();row2++){
+              for(int row3=0;row3<recpart.getRows();row3++){
 
-              cleanArr(pip,nVarsPart);
-              cleanArr(el,nVarsPart);
-              cleanArr(exc,nVarsExc);
-              cleanArr(elEs,9);
-              cleanArr(elLs,9);
-              cleanArr(pipEs,9);
-              cleanArr(pipLs,9);
+                cleanArr(pim,nVarsPart);
+                cleanArr(p,nVarsPart);
+                cleanArr(el,nVarsPart);
+                cleanArr(exc,nVarsExc);
+                cleanArr(elEs,9);
+                cleanArr(elLs,9);
+                cleanArr(pimEs,9);
+                cleanArr(pimLs,9);
+                cleanArr(pEs,9);
+                cleanArr(pLs,9);
 
-              fillRECPart(recpart,rectrack,row,el);
-              getCalInfo(reccal, row, el[1], elEs, elLs);
-              int matchel=matchTracks(pred_part,el,lim_p_res,threshold);
-              fillRECPart(recpart,rectrack,row3,pip);
-              getCalInfo(reccal, row3, pip[1], pipEs, pipLs);
-              int matchpip=matchTracks(pred_part,pip,lim_p_res,threshold);
+                fillRECPart(recpart,rectrack,row,el);
+                fillRECPart(recpart,rectrack,row2,pim);
+    
+                fillRECPart(recpart,rectrack,row3,p);
+
+                //System.out.printf("p pid %f px %f py %f pz %f status %f sector %f charge %f match %d\n",part[0],part[6],part[7],part[8],part[4],part[9],part[5],match);
+
+                int desired_sector_e=desired_sector;
+                int sector=(int)el[9];
+                //use all sectors if desired sector is 0
+                if(desired_sector==0){
+                  desired_sector_e=sector;
+                }
+
+                int matchpim=0, matchp=0,matchel=0;
+
+                int hasEl=0, hasRECEl=0, hasElCandi=0,hasPim=0,hasP=0;
                 
+                int elNCal=0, hasPCAL=0,hasECIN=0,hasECOUT=0,hasHTCC=0,oneOfEcalHTCC=0,ecalHTCC=0;
+                
+                //only loop through bank when needed, reduces time to read file
 
-              //System.out.printf("p pid %f px %f py %f pz %f status %f sector %f charge %f match %d\n",part[0],part[6],part[7],part[8],part[4],part[9],part[5],match);
+                if(p[5]==1 && p[0]==2212){
+                  matchp=matchTracks(pred_part,p,lim_p_res,threshold);
+                  if(matchp!=-1){
+                    getCalInfo(reccal, row3, p[1], pEs, pLs);
+                    hasP=1;
+                  }
+                }
 
-              int desired_sector_e=desired_sector;
-              int sector=(int)el[9];
-              //use all sectors if desired sector is 0
-              if(desired_sector==0){
-                desired_sector_e=sector;
-              }
+                if(pim[5]==-1 && row!=row2){ //pim[0]==-211
+                  
+                  matchpim=matchTracks(pred_part,pim,lim_p_res,threshold);
+                  if(matchpim!=-1){
+                    hasPim=1;
+                    getCalInfo(reccal, row2, pim[1], pimEs, pimLs);
+                  }
+                }
 
-              Boolean fid=passFid(elLs,el,reqFids);
+                if(el[5]==-1 && desired_sector_e==sector){ //&& matchel!=-1 el[11] is track chi^2 && el[11]<350 && Math.abs(el[13])<20 && el[12]==6
+                  
+                  matchel=matchTracks(pred_part,el,lim_p_res,threshold);
 
-              int hasEl=0, hasRECEl=0, hasElCandi=0,hasPip=0;
-              int elNCal=0, hasPCAL=0,hasECIN=0,hasECOUT=0,hasHTCC=0,oneOfEcalHTCC=0,ecalHTCC=0;
-              if(elEs[0]>0.01){elNCal++;hasPCAL=1;}
-              if(elEs[1]>0.01){elNCal++;hasECIN=1;}
-              if(elEs[2]>0.01){elNCal++;hasECOUT=1;}
-              if(el[10]>0.0){hasHTCC=1;}
-              if(hasHTCC>0 || elNCal>0){oneOfEcalHTCC=1;}
-              if(hasHTCC>0 && elNCal>0){ecalHTCC=1;}
+                  if( matchel!=-1){
+                    getCalInfo(reccal, row, el[1], elEs, elLs);
+                    if(elEs[0]>0.01){elNCal++;hasPCAL=1;}
+                    if(elEs[1]>0.01){elNCal++;hasECIN=1;}
+                    if(elEs[2]>0.01){elNCal++;hasECOUT=1;}
+                    if(el[10]>0.0){hasHTCC=1;}
+                    if(hasHTCC>0 || elNCal>0){oneOfEcalHTCC=1;}
+                    if(hasHTCC>0 && elNCal>0){ecalHTCC=1;}
 
+                    Boolean fid=passFid(elLs,el,reqFids);
+                    if(fid && ecalHTCC==1){
+                      hasElCandi=1;
+                    }
+                  }
+                }
 
-              if(pip[5]==1 && matchpip!=-1 && pip[0]==211){
-                hasPip=1;
-              }
+                /*if(matchel==11 && matchp!=-1 && matchpim!=-1){
+                  System.out.println("\n\nFound particles");
+                  System.out.printf("el match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchel,el[0],el[6],el[7],el[8],el[4],el[9],el[5]);
+                  System.out.printf("el HTCC %f hasHTCC %d, elNCal %d ,ecalHTCC %d, passFid %b, desired sector %d \n",el[10],hasHTCC,elNCal,ecalHTCC, fid,desired_sector_e);
+                  System.out.printf("pi- match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchpim,pim[0],pim[6],pim[7],pim[8],pim[4],pim[9],pim[5]);
+                  System.out.printf("pi+ match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchp,p[0],p[6],p[7],p[8],p[4],p[9],p[5]);
+                  System.out.printf("e- Candi %d, pi- candi %d, pi+ candi %d, trig %d \n",hasElCandi,hasPim,hasp,hasTrig);
+                }*/
 
-              //&& matchel!=-1 el[11] 
-              if(el[5]==-1 && desired_sector_e==sector && fid && matchel!=-1 && ecalHTCC==1){ 
-                hasElCandi=1;
-              }
+                if(hasElCandi==1 && hasPim==1 && hasP==1 && hasTrig==1){
 
-              if(hasElCandi==1 && hasPip==1 && hasTrig==1){
+                  calcExc(p,pim, el, exc,beamE);
+                  //System.out.printf("MM %f\n",exc[1]);
 
-                calcExc(pip, el, exc,beamE);
-                if(el[1]>2 && exc[1]>0.2){ //exc[1]>0.2 && el[1]>2
+                  if(exc[1]>0.2 && el[1]>2){ //exc[1]>0.2 && el[1]>2
 
-                  //System.out.println("\n\nFound particles");
-                  //System.out.printf("el pid %f px %f py %f pz %f status %f sector %f charge %f\n",el[0],el[6],el[7],el[8],el[4],el[9],el[5]);
-                  //System.out.printf("pi- pid %f px %f py %f pz %f status %f sector %f charge %f\n",pim[0],pim[6],pim[7],pim[8],pim[4],pim[9],pim[5]);
-                  //System.out.printf("pi+ pid %f px %f py %f pz %f status %f sector %f charge %f\n",pip[0],pip[6],pip[7],pip[8],pip[4],pip[9],pip[5]);
+                    //System.out.println("\n\nFound particles");
+                    //System.out.printf("el pid %f px %f py %f pz %f status %f sector %f charge %f\n",el[0],el[6],el[7],el[8],el[4],el[9],el[5]);
+                    //System.out.printf("pi- pid %f px %f py %f pz %f status %f sector %f charge %f\n",pim[0],pim[6],pim[7],pim[8],pim[4],pim[9],pim[5]);
+                    //System.out.printf("pi+ pid %f px %f py %f pz %f status %f sector %f charge %f\n",p[0],p[6],p[7],p[8],p[4],p[9],p[5]);
 
-                  for(int j=0;j<2;j++){
-                    String instapidelstring="with & without";
-                    if(j==1){
-                      instapidelstring="!";
-                      if(matchel==11){
-                        instapidelstring="";
+                    for(int j=0;j<3;j++){
+                      String instapidelstring="with & without";
+                      if(j==1){
+                        instapidelstring="!";
+                        if(matchel==11){
+                          instapidelstring="";
+                        }
+                      } else if(j==2){
+                        instapidelstring="CorrectPimPID";
+                        if(matchpim==11){
+                          instapidelstring="WrongPimPID";
+                        }
+                      }
+                      fillHisto(names,histos,"hIM_allInstaEl"+instapidelstring,exc[0]);
+                      fillHisto(names,histos,"hMM_allInstaEl"+instapidelstring,exc[1]);
+
+                      fillHisto2D(names2D,histos2D,"hpimPelP"+instapidelstring,pim[1],el[1]);
+
+                      fillHisto(names,histos,"hPDif_all"+instapidelstring,el[1]-pim[1]);
+
+                      //if(exc[0]>0.7 && exc[0]<0.86){
+                      fillHisto2D(names2D,histos2D,"helPTheta_allInstaEl_all"+instapidelstring,el[1],el[2]);
+                      fillHisto2D(names2D,histos2D,"hpimPTheta_allInstaEl_all"+instapidelstring,pim[1],pim[2]);
+                      fillHisto2D(names2D,histos2D,"hpPTheta_allInstaEl_all"+instapidelstring,p[1],p[2]);
+
+                      if(exc[1]>0.3 && exc[1]<0.7){
+                        fillHisto(names,histos,"hPDif"+instapidelstring,el[1]-pim[1]);
+
+                        fillHisto2D(names2D,histos2D,"helPTheta_allInstaEl"+instapidelstring,el[1],el[2]);
+                        fillHisto2D(names2D,histos2D,"helPSF_allInstaEl"+instapidelstring,el[1],elEs[3]);
+                        fillHisto2D(names2D,histos2D,"helXY_allInstaEl"+instapidelstring,elEs[7],elEs[8]);
+                        fillHisto2D(names2D,histos2D,"hpimPTheta_allInstaEl"+instapidelstring,pim[1],pim[2]);
+                        fillHisto2D(names2D,histos2D,"hpPTheta_allInstaEl"+instapidelstring,p[1],p[2]);
+                        fillHisto2D(names2D,histos2D,"helLVSF_allInstaEl"+instapidelstring,elLs[1],elEs[3]);
+                        fillHisto2D(names2D,histos2D,"helLWSF_allInstaEl"+instapidelstring,elLs[2],elEs[3]);
+
+                        fillHisto(names,histos,"hNCal_allInstaEl"+instapidelstring,elNCal);
+                        fillHisto(names,histos,"hPCAL_allInstaEl"+instapidelstring,hasPCAL);
+                        fillHisto(names,histos,"hECIN_allInstaEl"+instapidelstring,hasECIN);
+                        fillHisto(names,histos,"hECOUT_allInstaEl"+instapidelstring,hasECOUT);
+                        fillHisto(names,histos,"hHTCC_allInstaEl"+instapidelstring,hasHTCC);
+                      }
+                      if(pim[0]!=11){
+                        fillHisto(names,histos,"hMMgpim"+instapidelstring,exc[1]);
+                      } else{
+                        fillHisto(names,histos,"hMMwpim"+instapidelstring,exc[1]);
+                      }
+
+                      if(el[0]==11){
+                        fillHisto(names,histos,"hIM"+instapidelstring,exc[0]);
+                        fillHisto(names,histos,"hMM"+instapidelstring,exc[1]);
+                        //if(exc[0]>0.7 && exc[0]<0.86){
+                        if(exc[1]>0.3 && exc[1]<0.7){
+                          fillHisto2D(names2D,histos2D,"helPTheta"+instapidelstring,el[1],el[2]);
+                          fillHisto2D(names2D,histos2D,"helPSF"+instapidelstring,el[1],elEs[3]);
+                          fillHisto2D(names2D,histos2D,"helXY"+instapidelstring,elEs[7],elEs[8]);
+                          fillHisto2D(names2D,histos2D,"helLVSF"+instapidelstring,elLs[1],elEs[3]);
+                          fillHisto2D(names2D,histos2D,"helLWSF"+instapidelstring,elLs[2],elEs[3]);
+
+                          fillHisto(names,histos,"hNCal"+instapidelstring,elNCal);
+                        }
+                      } else {
+                        fillHisto(names,histos,"hIM_w"+instapidelstring,exc[0]);
+                        fillHisto(names,histos,"hMM_w"+instapidelstring,exc[1]);
+                        //if(exc[0]>0.7 && exc[0]<0.86){
+                        if(exc[1]>0.3 && exc[1]<0.7){
+                          fillHisto2D(names2D,histos2D,"helPTheta_w"+instapidelstring,el[1],el[2]);
+                          fillHisto2D(names2D,histos2D,"helPSF_w"+instapidelstring,el[1],elEs[3]);
+                          fillHisto2D(names2D,histos2D,"helXY_w"+instapidelstring,elEs[7],elEs[8]);
+                          fillHisto2D(names2D,histos2D,"helLVSF_w"+instapidelstring,elLs[1],elEs[3]);
+                          fillHisto2D(names2D,histos2D,"helLWSF_w"+instapidelstring,elLs[2],elEs[3]);
+
+                          fillHisto(names,histos,"hNCal_w"+instapidelstring,elNCal);
+                        }
                       }
                     }
-                    fillHisto(names,histos,"hIM_allInstaEl"+instapidelstring,exc[0]);
-                    fillHisto(names,histos,"hMM_allInstaEl"+instapidelstring,exc[1]);
-
-
-                    fillHisto2D(names2D,histos2D,"helPTheta_allInstaEl"+instapidelstring,el[1],el[2]);
-                    fillHisto2D(names2D,histos2D,"helPSF_allInstaEl"+instapidelstring,el[1],elEs[3]);
-                    fillHisto2D(names2D,histos2D,"helXY_allInstaEl"+instapidelstring,elEs[7],elEs[8]);
-                    fillHisto2D(names2D,histos2D,"hpipPTheta_allInstaEl"+instapidelstring,pip[1],pip[2]);
-                    fillHisto2D(names2D,histos2D,"helLVSF_allInstaEl"+instapidelstring,elLs[1],elEs[3]);
-                    fillHisto2D(names2D,histos2D,"helLWSF_allInstaEl"+instapidelstring,elLs[2],elEs[3]);
-
-                    fillHisto(names,histos,"hNCal_allInstaEl"+instapidelstring,elNCal);
-                    fillHisto(names,histos,"hPCAL_allInstaEl"+instapidelstring,hasPCAL);
-                    fillHisto(names,histos,"hECIN_allInstaEl"+instapidelstring,hasECIN);
-                    fillHisto(names,histos,"hECOUT_allInstaEl"+instapidelstring,hasECOUT);
-                    fillHisto(names,histos,"hHTCC_allInstaEl"+instapidelstring,hasHTCC);
-                      
-                    if(el[0]==11){
-                      fillHisto(names,histos,"hIM"+instapidelstring,exc[0]);
-                      fillHisto(names,histos,"hMM"+instapidelstring,exc[1]);
-                      fillHisto2D(names2D,histos2D,"helPTheta"+instapidelstring,el[1],el[2]);
-                      fillHisto2D(names2D,histos2D,"helPSF"+instapidelstring,el[1],elEs[3]);
-                      fillHisto2D(names2D,histos2D,"helXY"+instapidelstring,elEs[7],elEs[8]);
-                      fillHisto2D(names2D,histos2D,"helLVSF"+instapidelstring,elLs[1],elEs[3]);
-                      fillHisto2D(names2D,histos2D,"helLWSF"+instapidelstring,elLs[2],elEs[3]);
-
-                      fillHisto(names,histos,"hNCal"+instapidelstring,elNCal);
-                    } else {
-                      fillHisto(names,histos,"hIM_w"+instapidelstring,exc[0]);
-                      fillHisto(names,histos,"hMM_w"+instapidelstring,exc[1]);
-                      fillHisto2D(names2D,histos2D,"helPTheta_w"+instapidelstring,el[1],el[2]);
-                      fillHisto2D(names2D,histos2D,"helPSF_w"+instapidelstring,el[1],elEs[3]);
-                      fillHisto2D(names2D,histos2D,"helXY_w"+instapidelstring,elEs[7],elEs[8]);
-                      fillHisto2D(names2D,histos2D,"helLVSF_w"+instapidelstring,elLs[1],elEs[3]);
-                      fillHisto2D(names2D,histos2D,"helLWSF_w"+instapidelstring,elLs[2],elEs[3]);
-
-                      fillHisto(names,histos,"hNCal_w"+instapidelstring,elNCal);
-                    }  
-                  }
-                }//fill histos for both with and without online el first then fill with or without
-              } //right number of candidates
-            }//loop over rec parts 3
+                  }//fill histos for both with and without online el first then fill with or without
+                }
+              }//loop over rec parts 3
+            }// loop over rec parts 2
           }//loop over rec parts 1
         }//check bank not empty
 
@@ -743,11 +890,13 @@ public class OnePionValidator {
         String instapidelfilestring="";
         if(name.contains("!")){instapidelfilestring="_noInstaEl";}
         if(name.contains("with & without")){instapidelfilestring="_all";}
+        if(name.contains("CorrectPimPID")){instapidelfilestring="_GoodPim";}
+        if(name.contains("WrongPimPID")){instapidelfilestring="_WrongPim";}
 
         if(desired_sector==0){
-          TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/KLambda"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         } else {
-          TDirectory.export("plots_rga/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/KLambda"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         }
       }
 
@@ -758,22 +907,24 @@ public class OnePionValidator {
         String instapidelfilestring="";
         if(name.contains("!")){instapidelfilestring="_noInstaEl";}
         if(name.contains("with & without")){instapidelfilestring="_all";}
+        if(name.contains("CorrectPimPID")){instapidelfilestring="_GoodPim";}
+        if(name.contains("WrongPimPID")){instapidelfilestring="_WrongPim";}
 
         if(desired_sector==0){
-          TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/KLambda"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         } else {
-          TDirectory.export("plots_rga/OnePion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/KLambda"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         }
       }
       
     }
 
     //run with java -jar target/instarec-1.1.1-jar-with-dependencies.jar
-    //read plots in j4shell with eg TwigStudio.browser("plots/OnePion.twig")
+    //read plots in j4shell with eg TwigStudio.browser("plots/KLambda.twig")
     
     public static void main(String[] args){
         
-      System.out.println("\n\n----- starting one pion validator ");
+      System.out.println("\n\n----- starting k lambda validator ");
       //String fName_11="/Users/tyson/data_repo/trigger_data/rga/instarec_skims/cooked_11.h5";
       //String fName_211="/Users/tyson/data_repo/trigger_data/rga/instarec_skims/cooked_211.h5";
       //String fName="/work/clas12/jnp/clas_cooked_005197_irec.h5";
@@ -781,58 +932,58 @@ public class OnePionValidator {
       // String fName="/work/clas12/jnp/irec_outfile.h5";
 
       // String fName="/work/clas12/jnp/instarec/irec_005197.evio.00011.h5";
-      String fName="wvalid2.h5";
+      String fName="wvalid_KLambda.h5";
 
-      String endName="_elPsup2_th0p025_matchTrack_ecalHTCC_vzElRGACuts";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
+      String endName="_noPimID_elPsup2_th0p025_matchTrack";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
 
       double resp_threshold=0.025; //0.075
       double beamE=10.6;
         
-      OnePionValidator dp = new OnePionValidator();
+      KLambdaValidator dp = new KLambdaValidator();
 
-      dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      /*dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
       dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
-      dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
-
-      fName="wvalid2RadPhotons.h5";
-      endName="_radPhotonTraining"+endName;
-
-      dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
-      dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
-      dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
-
+      dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);*/
 
       //Fill by hand unfortunately after twig fits
       /*BarChartBuilder b = new BarChartBuilder();
-      b.addEntry("L1 Trigger ",125.98,217);
-      b.addEntry("L1 Trigger & Online e^- (94% / 67%)",117.882,146.336);
-      b.addEntry("L1 Trigger & Offline e^- (91% / 60%)", 114.969,132.577);
+      b.addEntry("L1 Trigger & Online e^- (99.0% / 96% / 76% / 88%)",765,952,1118,1292);
+      b.addEntry("L1 Trigger ",773,995,1471,1471);
+      b.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69% / 99.7%)",755,921,1010,1467);
       b.setTitleY("Counts");
-      b.setColors(new int[]{1,2,5});
-      b.setLabels(new String[]{"With Fiducial Cuts","Without Fiducial Cuts"});
+      b.setColors(new int[]{2,1,5});
+      b.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts", "Purity (No Fiducial Cuts)"});
       DataGroup b2 = b.build();
-      TDirectory.export("plots/OnePion"+endName+".twig","/ai/validation_barchart",b2);
+      TDirectory.export("plots_rga/KLambda"+endName+".twig","/ai/validation_barchart",b2);
       TGCanvas c = new TGCanvas(1000,1000);
       //for(DataSet ds : group.getData()) c.draw(ds, "same");
       c.view().region().draw(b2);//.showLegend(0.05, 0.95);
       c.view().region().showLegend(0.05, 0.95);
       c.repaint();*/
 
+      fName="wvalid_RadPhotons_KLambda.h5";
+      endName="_radPhotonTraining"+endName;
+
+      /*dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
+      dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);*/
+
       //Fill by hand unfortunately after twig fits
-      //BarChartBuilder b = new BarChartBuilder();
-      //b.addEntry("L1 Trigger & Online e^- (97% / 94% / 68%)",88.74,118.68,147.025);
-      //b.addEntry("L1 Trigger & Offline e^- (96% / 91% / 61%)",86.785,114.702,132.448);
-      //b.addEntry("L1 Trigger ",90.324,126.42,216.897);
-      //b.setTitleY("Counts");
-      //b.setColors(new int[]{2,5,1});
-      //b.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts"});
-      //DataGroup b2 = b.build();
-      //TDirectory.export("plots_rga/OnePion"+endName+".twig","/ai/validation_barchart",b2);
-      //TGCanvas c = new TGCanvas(1000,1000);
-      ////for(DataSet ds : group.getData()) c.draw(ds, "same");
-      //c.view().region().draw(b2);//.showLegend(0.05, 0.95);
-      //c.view().region().showLegend(0.05, 0.95);
-      //c.repaint();
+      /*BarChartBuilder bRad = new BarChartBuilder();
+      bRad.addEntry("L1 Trigger & Online e^- (99.7% / 99.6% / 99.0% / 79%)",771,991,1455,1155);
+      bRad.addEntry("L1 Trigger ",773,995,1471,1471);
+      bRad.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69% / 99.7%)",755,921,1010,1467);
+      bRad.setTitleY("Counts");
+      bRad.setColors(new int[]{2,1,5});
+      bRad.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts", "Purity (No Fiducial Cuts)"});
+      DataGroup b2Rad = bRad.build();
+      TDirectory.export("plots_rga/KLambda"+endName+".twig","/ai/validation_barchart",b2);
+      TGCanvas cRad = new TGCanvas(1000,1000);
+      //for(DataSet ds : group.getData()) c.draw(ds, "same");
+      cRad.view().region().draw(b2Rad);//.showLegend(0.05, 0.95);
+      cRad.view().region().showLegend(0.05, 0.95);
+      cRad.repaint();*/
+      
       
         
     }

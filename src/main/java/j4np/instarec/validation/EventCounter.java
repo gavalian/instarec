@@ -126,7 +126,7 @@ public class EventCounter {
     public static void main(String[] args){
         
       System.out.println("\n\n----- starting event counter ");
-      String fName="w.h5";
+      String fName="wRadPhotons.h5";
 
       double resp_threshold=0.025; 
         

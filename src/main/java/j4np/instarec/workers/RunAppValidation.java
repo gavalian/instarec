@@ -47,22 +47,28 @@ public class RunAppValidation {
         
         //String file = "/Users/gavalian/Work/DataSpace/decoded/clas_006595.evio.00625-00629_DC.hipo";
         //  String file = "/Users/tyson/data_repo/trigger_data/rgd/018326/run_18326_3_wAIBanks.h5";
+        // String file = "/Users/tyson/data_repo/trigger_data/rgd/018777/sorted_out_skim_018777_noPID.hipo";
         //String file = "/Users/tyson/data_repo/trigger_data/sims/claspyth_train/clasdis_62.hipo";
         // String file = "/w/work/clas12/tyson/data_repo/caos/rga/run_test_5407.h5";
         // String file = "/work/clas12/jnp/instarec/irec_005197.evio.00011.h5";
-        String file = "/work/clas12/jnp/instarec/irec_rec_005197.evio.h5";
+          //String file = "/work/clas12/jnp/instarec/irec_rec_005197.evio.h5";
+        String file="/Users/tyson/data_repo/trigger_data/rga/irec_rec_005197.evio.h5";
+        //String file="/Users/tyson/data_repo/trigger_data/rga/run_test_5407.h5";
+        //String file="/Users/tyson/data_repo/trigger_data/rga/run_valid_inbending.h5";
+        
         HipoReader r = new HipoReader(file);
         
-        HipoWriter w = HipoWriter.create("w.h5", r);
-        
+        String outName="wRadPhotons.h5"; //valid
+        HipoWriter w = HipoWriter.create(outName, r); 
+          
         DataActorStream stream = new DataActorStream();
-        
+          
         stream.setSource(r).setSync(w);
 
         String pathToClusterFinder = "etc/networks_rga/clusterfinder/cf";
-        String pathToElPID = "etc/networks_rga/ElPID/ElPID";
+        String pathToElPID = "etc/networks_rga/ElPID/ElPIDRadPhotons";
         double threshold=0.1;        
-                
+
         ConverterWorker   convert = new ConverterWorker();
         DriftChamberWorker  dcwrk = new DriftChamberWorker();
         TrackFinderWorker  finder = new TrackFinderWorker();
@@ -71,15 +77,15 @@ public class RunAppValidation {
         ConverterWorkerHTCC  htcc = new ConverterWorkerHTCC();
         ElPIDWorker elPID  = new ElPIDWorker(pathToElPID,threshold);
         ConverterWorkerParticleCFTraining   convertParticleCFTraining = new ConverterWorkerParticleCFTraining();
-        
+          
         finder.initNetworks();
-        
+          
         List<DataWorker>  workers = Arrays.asList(convert,dcwrk, finder, ecalfinder, ftoffinder, htcc, elPID, convertParticleCFTraining);
-        
-        List<DataActor>   actors = RunAppValidation.createActors(1, 128, workers);
+          
+        List<DataActor>   actors = RunAppValidation.createActors(4, 128, workers);
         actors.get(0).setBenchmark(1);
         stream.addActor(actors);//.addActor(convert2);//.addActor(convert3).addActor(convert4);
-        
+          
         stream.run();
 
         /*ClusterMatchingValidator valid = new ClusterMatchingValidator();
@@ -97,7 +103,7 @@ public class RunAppValidation {
               valid.process("w.h5",150000,sector,chargeSt[charge],lay);
             }
           }
-        }
+        }*/
 
         float[] respbins = new float[3];
         respbins[0]=(float)0.01;
@@ -120,7 +126,7 @@ public class RunAppValidation {
         phibins[2]=(float)180;
 
         ElPIDValidator validpid = new ElPIDValidator();
-        validpid.process("w.h5",150000,0.05,respbins,pbins,thetabins,phibins,(float)0.99,false,"");*/
+        validpid.process(outName,150000,0.05,respbins,pbins,thetabins,phibins,(float)0.99,false,"_RadPhotons");
         
     }
 }

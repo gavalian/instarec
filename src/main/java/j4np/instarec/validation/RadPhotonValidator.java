@@ -152,8 +152,10 @@ public class RadPhotonValidator {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(32200, 99, "i", 1200);
-      Leaf pred_part = new Leaf(32200, 1, "i", 1200);
+      Leaf part = new Leaf(32, 99, "i", 1200);
+      Leaf pred_part = new Leaf(32, 3, "i", 1200);
+      Leaf trackbank = new Leaf(32000,1,"i",4096); //27,3
+      
 
       Bank recpart = r.getBank("REC::Particle");
       Bank reccal = r.getBank("REC::Calorimeter");
@@ -222,8 +224,15 @@ public class RadPhotonValidator {
         r.nextEvent(ev);
         ev.read(part,32,99);
         ev.read(pred_part,32,3);
+        //Leaf pred_part = ev.readLeaf(1,12,27,3);
+        //ev.read(trackbank,32000,1); //27,3);
         ev.read(recpart);
         ev.read(reccal);
+
+        //System.out.println("\n\nNew Event");
+        //pred_part.print();
+        //trackbank.print();
+        //recpart.show();
         
 
         //same rows in part bank and pred_part bank

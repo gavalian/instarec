@@ -271,11 +271,45 @@ public class TwoPionValidator {
       part[12]=nSL;
     }
 
-    public Boolean passFid(double[] Ls){
+    public Boolean passFid(double[] Ls, double part[],int str){
+      //is track chi^2 && part11]<350 && Math.abs(part13])<20 && part12]==6 && oneOfEcalHTCC==1
+      //RGA vz && part[13]<20 && part[13]>(-13)
+      //tight: >14cm ortherwise 9cm
+
+      boolean vz=false,looseCal=false,tightCal=false;
+
+      //for str 0:
+      if(part[13]<20 && part[13]>(-13)){
+        vz=true;
+      }
+
       if(Ls[0]>9 && Ls[1]>9 && Ls[2]>9){
+        looseCal=true;
+        if(Ls[0]>14 && Ls[1]>14 && Ls[2]>14){
+          tightCal=true;
+        }
+      }
+
+      if(str==0){
+        if(vz){
+          return true;
+        } else{
+          return false;
+        }
+      } else if (str==1){
+        if(vz && looseCal){
+          return true;
+        } else{
+          return false;
+        }
+      }  else if (str==2){
+        if(vz && tightCal){
+          return true;
+        } else{
+          return false;
+        }
+      } else {
         return true;
-      } else{
-        return false;
       }
     }
 
@@ -291,7 +325,7 @@ public class TwoPionValidator {
     }
 
 
-    public void process(String file, int limEvs,String endName, double threshold,double beamE, Boolean reqFids, int desired_sector){
+    public void process(String file, int limEvs,String endName, double threshold,double beamE, int reqFids, int desired_sector){
       
       double lim_p_res=0.2; //percentage
 
@@ -300,6 +334,7 @@ public class TwoPionValidator {
 
       HipoReader r = new HipoReader();
       Event ev = new Event();
+      //r.setTags(2211); //2211 for two pion tagger
       r.open(file);
       
 
@@ -333,7 +368,7 @@ public class TwoPionValidator {
       Map<String, Integer> names2D = new HashMap<>();
 
       int nHistos=0,nHistos2D=0;
-      for(int i=0;i<3;i++){
+      for(int i=0;i<5;i++){
         String instapidelstring="";
         String instapidelfilestring="";
         if(i==1){
@@ -342,7 +377,14 @@ public class TwoPionValidator {
         } else if(i==2){
           instapidelstring="with & without";
           instapidelfilestring="_all";
+        } else if(i==3){
+          instapidelstring="CorrectPimPID";
+          instapidelfilestring="_GoodPim";
+        } else if(i==4){
+          instapidelstring="WrongPimPID";
+          instapidelfilestring="_WrongPim";
         }
+        
         
         H1F hNCal = new H1F("Calo: Offline e- PID & "+instapidelstring+" Online e- PID", 6,-1.5,4.5);
         hNCal.attr().setLineColor(5);
@@ -400,7 +442,7 @@ public class TwoPionValidator {
         nHistos++;
         histos.add(hHTCC_allInstaEl);
 
-        H1F hMM = new H1F("Mx: Offline e- PID & "+instapidelstring+" Online e- PID", 100,0,3.5);
+        H1F hMM = new H1F("Mx: Offline e- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM.attr().setLineColor(5);
         hMM.attr().setLineWidth(3);
         hMM.attr().setTitleX("Mx(e'#pi^+#pi^-) [GeV]");
@@ -408,7 +450,25 @@ public class TwoPionValidator {
         nHistos++;
         histos.add(hMM);
 
-        H1F hMM_w = new H1F("Mx: Offline ! e- PID & "+instapidelstring+" Online e- PID", 100,0,3.5);
+
+        H1F hMMwpim = new H1F("Mx: wrong pi- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
+        hMMwpim.attr().setLineColor(5);
+        hMMwpim.attr().setLineWidth(3);
+        hMMwpim.attr().setTitleX("Mx(e'#pi^+#pi^-) [GeV]");
+        names.put("hMMwpim"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hMMwpim);
+
+        H1F hMMgpim = new H1F("Mx: good pi- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
+        hMMgpim.attr().setLineColor(5);
+        hMMgpim.attr().setLineWidth(3);
+        hMMgpim.attr().setTitleX("Mx(e'#pi^+#pi^-) [GeV]");
+        names.put("hMMgpim"+instapidelstring,nHistos);
+        nHistos++;
+        histos.add(hMMgpim);
+
+
+        H1F hMM_w = new H1F("Mx: Offline ! e- PID & "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM_w.attr().setLineColor(1);
         hMM_w.attr().setLineWidth(3);
         hMM_w.attr().setTitleX("Mx(e'#pi^+#pi^-) [GeV]");
@@ -416,7 +476,7 @@ public class TwoPionValidator {
         nHistos++;
         histos.add(hMM_w);
 
-        H1F hMM_allInstaEl = new H1F("Mx: "+instapidelstring+" Online e- PID", 100,0,3.5);
+        H1F hMM_allInstaEl = new H1F("Mx: "+instapidelstring+" Online e- PID", 100,0,2.0);
         hMM_allInstaEl.attr().setLineColor(2);
         hMM_allInstaEl.attr().setLineWidth(3);
         hMM_allInstaEl.attr().setTitleX("Mx(e'#pi^+#pi^-) [GeV]");
@@ -636,8 +696,9 @@ public class TwoPionValidator {
         int hasTrig=hasTriggerEl(triggerbank);
         
 
-        //System.out.println("\n\nNew Event");
+        //System.out.printf("\n\nNew Event, %d \n",pred_part.getSize());
         //pred_part.print();
+        //recpart.show();
         //reccal.show();
 
         if(pred_part.getSize()>0){
@@ -658,15 +719,9 @@ public class TwoPionValidator {
                 cleanArr(pipLs,9);
 
                 fillRECPart(recpart,rectrack,row,el);
-                getCalInfo(reccal, row, el[1], elEs, elLs);
-                int matchel=matchTracks(pred_part,el,lim_p_res,threshold);
                 fillRECPart(recpart,rectrack,row2,pim);
-                getCalInfo(reccal, row2, pim[1], pimEs, pimLs);
-                int matchpim=matchTracks(pred_part,pim,lim_p_res,threshold);
+    
                 fillRECPart(recpart,rectrack,row3,pip);
-                getCalInfo(reccal, row3, pip[1], pipEs, pipLs);
-                int matchpip=matchTracks(pred_part,pip,lim_p_res,threshold);
-                
 
                 //System.out.printf("p pid %f px %f py %f pz %f status %f sector %f charge %f match %d\n",part[0],part[6],part[7],part[8],part[4],part[9],part[5],match);
 
@@ -677,28 +732,67 @@ public class TwoPionValidator {
                   desired_sector_e=sector;
                 }
 
-                Boolean fid=passFid(elLs);
-                if(!reqFids){
-                  fid=true;
-                }
+                int matchpim=0, matchpip=0,matchel=0;
 
                 int hasEl=0, hasRECEl=0, hasElCandi=0,hasPim=0,hasPip=0;
+                
+                int elNCal=0, hasPCAL=0,hasECIN=0,hasECOUT=0,hasHTCC=0,oneOfEcalHTCC=0,ecalHTCC=0;
+                
+                //only loop through bank when needed, reduces time to read file
 
-
-                if(pip[5]==1 && matchpip!=-1 && pip[0]==211){
+                if(pip[5]==1 && pip[0]==211){
                   hasPip=1;
-                }
-                if(pim[5]==-1 && matchpim!=-1 && pim[0]==-211){
-                  hasPim=1;
+                  //if match, force in FD, might want to also have in CD for larger kinematics
+                  //matchpip=matchTracks(pred_part,pip,lim_p_res,threshold);
+                  //if(matchpip!=-1){
+                  //  getCalInfo(reccal, row3, pip[1], pipEs, pipLs);
+                  //  hasPip=1;
+                  //}
                 }
 
-                if(el[5]==-1 && desired_sector_e==sector && fid && matchel!=-1){ //&& matchel!=-1 el[11] is track chi^2 && el[11]<350 && Math.abs(el[13])<20 && el[12]==6
-                  hasElCandi=1;
+                if(pim[5]==-1 && row!=row2){ //pim[0]==-211
+                  
+                  matchpim=matchTracks(pred_part,pim,lim_p_res,threshold);
+                  if(matchpim!=-1){
+                    hasPim=1;
+                    getCalInfo(reccal, row2, pim[1], pimEs, pimLs);
+                  }
                 }
+
+                if(el[5]==-1 && desired_sector_e==sector){ //&& matchel!=-1 el[11] is track chi^2 && el[11]<350 && Math.abs(el[13])<20 && el[12]==6
+                  
+                  matchel=matchTracks(pred_part,el,lim_p_res,threshold);
+
+                  if( matchel!=-1){
+                    getCalInfo(reccal, row, el[1], elEs, elLs);
+                    if(elEs[0]>0.01){elNCal++;hasPCAL=1;}
+                    if(elEs[1]>0.01){elNCal++;hasECIN=1;}
+                    if(elEs[2]>0.01){elNCal++;hasECOUT=1;}
+                    if(el[10]>0.0){hasHTCC=1;}
+                    if(hasHTCC>0 || elNCal>0){oneOfEcalHTCC=1;}
+                    if(hasHTCC>0 && elNCal>0){ecalHTCC=1;}
+
+                    Boolean fid=passFid(elLs,el,reqFids);
+                    if(fid && ecalHTCC==1){
+                      hasElCandi=1;
+                    }
+                  }
+                }
+
+                /*if(matchel==11 && matchpip!=-1 && matchpim!=-1){
+                  System.out.println("\n\nFound particles");
+                  System.out.printf("el match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchel,el[0],el[6],el[7],el[8],el[4],el[9],el[5]);
+                  System.out.printf("el HTCC %f hasHTCC %d, elNCal %d ,ecalHTCC %d, passFid %b, desired sector %d \n",el[10],hasHTCC,elNCal,ecalHTCC, fid,desired_sector_e);
+                  System.out.printf("pi- match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchpim,pim[0],pim[6],pim[7],pim[8],pim[4],pim[9],pim[5]);
+                  System.out.printf("pi+ match %d pid %f px %f py %f pz %f status %f sector %f charge %f\n",matchpip,pip[0],pip[6],pip[7],pip[8],pip[4],pip[9],pip[5]);
+                  System.out.printf("e- Candi %d, pi- candi %d, pi+ candi %d, trig %d \n",hasElCandi,hasPim,hasPip,hasTrig);
+                }*/
 
                 if(hasElCandi==1 && hasPim==1 && hasPip==1 && hasTrig==1){
 
                   calcExc(pip,pim, el, exc,beamE);
+                  //System.out.printf("MM %f\n",exc[1]);
+
                   if(exc[1]>0.2 && el[1]>2){ //exc[1]>0.2 && el[1]>2
 
                     //System.out.println("\n\nFound particles");
@@ -706,18 +800,17 @@ public class TwoPionValidator {
                     //System.out.printf("pi- pid %f px %f py %f pz %f status %f sector %f charge %f\n",pim[0],pim[6],pim[7],pim[8],pim[4],pim[9],pim[5]);
                     //System.out.printf("pi+ pid %f px %f py %f pz %f status %f sector %f charge %f\n",pip[0],pip[6],pip[7],pip[8],pip[4],pip[9],pip[5]);
 
-                    int elNCal=0, hasPCAL=0,hasECIN=0,hasECOUT=0,hasHTCC=0;
-                    if(elEs[0]>0.01){elNCal++;hasPCAL=1;}
-                    if(elEs[1]>0.01){elNCal++;hasECIN=1;}
-                    if(elEs[2]>0.01){elNCal++;hasECOUT=1;}
-                    if(el[10]>0.0){hasHTCC=1;}
-
-                    for(int j=0;j<2;j++){
+                    for(int j=0;j<3;j++){
                       String instapidelstring="with & without";
                       if(j==1){
                         instapidelstring="!";
                         if(matchel==11){
                           instapidelstring="";
+                        }
+                      } else if(j==2){
+                        instapidelstring="CorrectPimPID";
+                        if(matchpim==11){
+                          instapidelstring="WrongPimPID";
                         }
                       }
                       fillHisto(names,histos,"hIM_allInstaEl"+instapidelstring,exc[0]);
@@ -749,6 +842,12 @@ public class TwoPionValidator {
                         fillHisto(names,histos,"hECOUT_allInstaEl"+instapidelstring,hasECOUT);
                         fillHisto(names,histos,"hHTCC_allInstaEl"+instapidelstring,hasHTCC);
                       }
+                      if(pim[0]!=11){
+                        fillHisto(names,histos,"hMMgpim"+instapidelstring,exc[1]);
+                      } else{
+                        fillHisto(names,histos,"hMMwpim"+instapidelstring,exc[1]);
+                      }
+
                       if(el[0]==11){
                         fillHisto(names,histos,"hIM"+instapidelstring,exc[0]);
                         fillHisto(names,histos,"hMM"+instapidelstring,exc[1]);
@@ -793,11 +892,13 @@ public class TwoPionValidator {
         String instapidelfilestring="";
         if(name.contains("!")){instapidelfilestring="_noInstaEl";}
         if(name.contains("with & without")){instapidelfilestring="_all";}
+        if(name.contains("CorrectPimPID")){instapidelfilestring="_GoodPim";}
+        if(name.contains("WrongPimPID")){instapidelfilestring="_WrongPim";}
 
         if(desired_sector==0){
-          TDirectory.export("plots/TwoPion"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/TwoPion"+endName+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         } else {
-          TDirectory.export("plots/TwoPion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
+          TDirectory.export("plots_rga/TwoPion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos.get(index));
         }
       }
 
@@ -808,11 +909,13 @@ public class TwoPionValidator {
         String instapidelfilestring="";
         if(name.contains("!")){instapidelfilestring="_noInstaEl";}
         if(name.contains("with & without")){instapidelfilestring="_all";}
+        if(name.contains("CorrectPimPID")){instapidelfilestring="_GoodPim";}
+        if(name.contains("WrongPimPID")){instapidelfilestring="_WrongPim";}
 
         if(desired_sector==0){
-          TDirectory.export("plots/TwoPion"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/TwoPion"+endName+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         } else {
-          TDirectory.export("plots/TwoPion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
+          TDirectory.export("plots_rga/TwoPion"+endName+"_Sector"+String.valueOf(desired_sector)+".twig","/ai/validation"+instapidelfilestring,histos2D.get(index));
         }
       }
       
@@ -831,34 +934,61 @@ public class TwoPionValidator {
       // String fName="/work/clas12/jnp/irec_outfile.h5";
 
       // String fName="/work/clas12/jnp/instarec/irec_005197.evio.00011.h5";
-      String fName="w.h5";
+      String fName="wvalid_TwoPion_noPimID.h5";
 
-      String endName="_elPsup2_th0p075_matchTrack";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
+      String endName="_noPimID_elPsup2_th0p025_matchTrack";//_elPsup2"; //_phiCut5 eg 175-185, 10 otherwise trackChi2l350_vzl20_6SL
 
-      double resp_threshold=0.075; //0.075
+      double resp_threshold=0.025; //0.075
       double beamE=10.6;
         
       TwoPionValidator dp = new TwoPionValidator();
 
-      dp.process(fName,-1,endName,resp_threshold,beamE,false,0);
-      dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,true,0);
+      //dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      //dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
+      //dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
 
+      // 88 % purity
 
       //Fill by hand unfortunately after twig fits
-      /*BarChartBuilder b = new BarChartBuilder();
-      b.addEntry("L1 e- ",93.,154.);
-      b.addEntry("L1 e- & Online e- (100% / 78%)",93,120);
-      b.addEntry("L1 e- & Online e- & Offline e- (92% / 65%)", 86,100);
+      BarChartBuilder b = new BarChartBuilder();
+      b.addEntry("L1 Trigger & Online e^- (99.0% / 96% / 76%)",765,952,1118);
+      b.addEntry("L1 Trigger ",773,995,1471);
+      b.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69% / 99.7%)",755,921,1010);
       b.setTitleY("Counts");
-      b.setColors(new int[]{1,2,5});
-      b.setLabels(new String[]{"With Fiducial Cuts","Without Fiducial Cuts"});
+      b.setColors(new int[]{2,1,5});
+      b.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts"});
       DataGroup b2 = b.build();
-      TDirectory.export("plots/TwoPion"+endName+".twig","/ai/validation_barchart",b2);
+      TDirectory.export("plots_rga/TwoPion"+endName+".twig","/ai/validation_barchart",b2);
       TGCanvas c = new TGCanvas(1000,1000);
       //for(DataSet ds : group.getData()) c.draw(ds, "same");
       c.view().region().draw(b2);//.showLegend(0.05, 0.95);
       c.view().region().showLegend(0.05, 0.95);
-      c.repaint();*/
+      c.repaint();
+
+      fName="wvalid_RadPhotons_TwoPion_noPimID.h5";
+      endName="_radPhotonTraining"+endName;
+
+      //dp.process(fName,-1,endName,resp_threshold,beamE,0,0);
+      //dp.process(fName,-1,endName+"_wFid",resp_threshold,beamE,1,0);
+      //dp.process(fName,-1,endName+"_wFidTight",resp_threshold,beamE,2,0);
+
+      //81% purity
+
+      //Fill by hand unfortunately after twig fits
+      BarChartBuilder bRad = new BarChartBuilder();
+      bRad.addEntry("L1 Trigger & Online e^- (99.8% / 99.7% / 99.0%)",772,992,1457);
+      bRad.addEntry("L1 Trigger ",773,995,1471);
+      bRad.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69%)",755,921,1010);
+      bRad.setTitleY("Counts");
+      bRad.setColors(new int[]{2,1,5});
+      bRad.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts"});
+      DataGroup b2Rad = bRad.build();
+      TDirectory.export("plots_rga/TwoPion"+endName+".twig","/ai/validation_barchart",b2);
+      TGCanvas cRad = new TGCanvas(1000,1000);
+      //for(DataSet ds : group.getData()) c.draw(ds, "same");
+      cRad.view().region().draw(b2Rad);//.showLegend(0.05, 0.95);
+      cRad.view().region().showLegend(0.05, 0.95);
+      cRad.repaint();
       
         
     }

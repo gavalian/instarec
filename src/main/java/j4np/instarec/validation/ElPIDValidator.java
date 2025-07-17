@@ -115,8 +115,8 @@ public class ElPIDValidator {
           effLow, bestPuratEffLow, bestBin);
       }
 
-      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Purity_"+name, gPur);
-      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Efficiency_"+name, gEff);
+      TDirectory.export("plots_rga/ElPID0" + endName + ".twig", "/ai/validation/Purity_"+name, gPur);
+      TDirectory.export("plots_rga/ElPID0" + endName + ".twig", "/ai/validation/Efficiency_"+name, gEff);
 
     }
 
@@ -235,14 +235,14 @@ public class ElPIDValidator {
       HipoReader r = new HipoReader(file);
       Event ev = new Event();
   
-      Leaf part = new Leaf(32200, 99, "i", 1200);
-      Leaf pred_part = new Leaf(32200, 1, "i", 1200);
+      Leaf part = new Leaf(32, 99, "i", 1200);
+      Leaf pred_part = new Leaf(32, 3, "i", 1200);
 
       /*for priting */
-      Leaf trackbank = new Leaf(32000,1,"i",4096);
-      Leaf ecalbank = new Leaf(32200,2,"i",4096);
-      Leaf htccbank = new Leaf(32200,98,"i",4096);
-      Leaf ftofbank = new Leaf(32200,3,"i",4096);
+      Leaf trackbank = new Leaf(27,1,"i",4096);
+      Leaf ecalbank = new Leaf(32,1,"i",4096);
+      Leaf htccbank = new Leaf(32,98,"i",4096);
+      Leaf ftofbank = new Leaf(32,2,"i",4096);
       Bank recpart = r.getBank("REC::Particle");
       Bank reccal = r.getBank("REC::Calorimeter");
       Bank rechtcc = r.getBank("REC::Cherenkov");
@@ -263,15 +263,15 @@ public class ElPIDValidator {
       while(r.hasNext() && count<limTotNegEvs){
 
         r.nextEvent(ev);
-        ev.read(part,32200,99);
-        ev.read(pred_part,32200,1);
+        ev.read(part,32,99);
+        ev.read(pred_part,32,3);
 
         /* for print */
         if(print){
-          ev.read(trackbank,32000,1);
-          ev.read(ecalbank,32200,2);
-          ev.read(htccbank,32200,98);
-          ev.read(ftofbank,32200,3);
+          ev.read(trackbank,27,1);
+          ev.read(ecalbank,32,1);
+          ev.read(htccbank,32,98);
+          ev.read(ftofbank,32,2);
           ev.read(recpart);
           ev.read(reccal);
           ev.read(rechtcc);
@@ -389,8 +389,8 @@ public class ElPIDValidator {
         }
       }
 
-      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespPos);
-      TDirectory.export("plots/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespNeg);
+      TDirectory.export("plots_rga/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespPos);
+      TDirectory.export("plots_rga/ElPID0" + endName + ".twig", "/ai/validation/Resp", hRespNeg);
 
       System.out.printf("\nTP %f FP %f FN %f \n",TP,FP,FN);
 
@@ -423,7 +423,7 @@ public class ElPIDValidator {
       p.addRequired("-in", "input name");
       p.parse(args);
 
-      String endName=""; // used to change output path of plots (eg adding _NoFiducialCuts)
+      String endName="_RadPhotons"; // used to change output path of plots (eg adding _NoFiducialCuts)
 
       float[] respbins = new float[3];
       respbins[0]=(float)0.01;
