@@ -953,7 +953,7 @@ public class TwoPionValidator {
       BarChartBuilder b = new BarChartBuilder();
       b.addEntry("L1 Trigger & Online e^- (99.0% / 96% / 76%)",765,952,1118);
       b.addEntry("L1 Trigger ",773,995,1471);
-      b.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69% / 99.7%)",755,921,1010);
+      b.addEntry("L1 Trigger & Offline e^- (98% / 93% / 69% )",755,921,1010);
       b.setTitleY("Counts");
       b.setColors(new int[]{2,1,5});
       b.setLabels(new String[]{"Tight Fiducial Cuts","Loose Fiducial Cuts","No Fiducial Cuts"});
